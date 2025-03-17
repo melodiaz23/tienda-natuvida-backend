@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-
+@Table(name = "customers")
 public class Customer {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
