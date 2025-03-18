@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ import java.util.UUID;
 public class Product {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
   @NonNull
@@ -38,6 +39,9 @@ public class Product {
   @JoinColumn(name = "category_id")
   private Category category;
 
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ProductImage> images = new ArrayList<>();
+
   @Column(name = "created_at")
   @CreatedDate
   private LocalDateTime createdAt;
@@ -48,5 +52,25 @@ public class Product {
 
   @OneToMany(mappedBy = "product")
   private List<OrderItem> orderItems;
+
+  public void addImage(ProductImage image) {
+    images.add(image);
+    image.setProduct(this);
+  }
+
+  public void removeImage(ProductImage image) {
+    images.remove(image);
+    image.setProduct(null);
+  }
+
+//  The field exists only in the Java object,
+  @Transient // tell JPA "don't map this getter to a database column
+  public String getPrimaryImageUrl() {
+    return images.stream()
+        .filter(ProductImage::isPrimary)
+        .findFirst()
+        .map(ProductImage::getImageUrl)
+        .orElse(null);
+  }
 
 }
