@@ -1,5 +1,6 @@
 package com.natuvida.store.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -31,9 +32,9 @@ public class Product {
   @Column(length = 500)
   private String description;
 
-  @NonNull
-  @Column(nullable = false)
-  private BigDecimal price;
+  @JsonManagedReference // Manage bidirectional relation with ProductPricing
+  @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  private ProductPricing pricing;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "category_id")
@@ -64,7 +65,7 @@ public class Product {
   }
 
 //  The field exists only in the Java object,
-  @Transient // tell JPA "don't map this getter to a database column
+  @Transient // tell JPA don't map this getter to a database column
   public String getPrimaryImageUrl() {
     return images.stream()
         .filter(ProductImage::isPrimary)
