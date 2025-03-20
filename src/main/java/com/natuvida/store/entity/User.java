@@ -1,5 +1,6 @@
 package com.natuvida.store.entity;
 
+import com.natuvida.store.enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -36,22 +39,24 @@ public class User {
   @LastModifiedDate // automatically updates the field when the entity is modified
   private LocalDateTime updatedAt;
 
-  /*
-   TODO: authentication fields later
-   private String password;
-   private boolean enabled = true;
-   private Set<Role> roles = new HashSet<>();
-  */
+  @Enumerated(EnumType.STRING)
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+  @Column(name = "role")
+  private Set<Role> roles = new HashSet<>(); // Set ensure that cannot contain duplicate elements
+
+  private String password;
+
+  private boolean enabled = true;
 
   // A User may or may not have a Customer profile
   //  Deleting a User will NOT delete the associated Customer.
   @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
   private Customer customer;
 
-  // Flag to indicate if this user is a customer
-  @Column(name = "is_customer")
-  private boolean isCustomer = false;
-
+  public boolean isCustomer() {
+    return customer != null;
+  }
 
 
 }
