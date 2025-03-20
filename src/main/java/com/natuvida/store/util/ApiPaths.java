@@ -12,13 +12,10 @@ public final class ApiPaths {
   public static final String ORDERS = API_BASE_PATH + "/orders";
   public static final String CART = API_BASE_PATH + "/cart";
 
-  /*
-  TODO: Auth configuration
- Auth endpoints
+  // Auth endpoints
   public static final String AUTH = API_BASE_PATH + "/auth";
   public static final String LOGIN = AUTH + "/login";
   public static final String REGISTER = AUTH + "/register";
-*/
 
   // Private constructor to prevent instantiation
   private ApiPaths() {
