@@ -43,12 +43,12 @@ public class Product {
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ProductImage> images = new ArrayList<>();
 
-  @Column(name = "created_at")
   @CreatedDate
+  @Column(name = "created_at")
   private LocalDateTime createdAt;
 
-  @Column(name = "updated_at")
   @LastModifiedDate
+  @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
   @OneToMany(mappedBy = "product")
