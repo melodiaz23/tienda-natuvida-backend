@@ -1,7 +1,9 @@
 package com.natuvida.store.service;
 
+import com.natuvida.store.entity.Category;
 import com.natuvida.store.entity.Product;
 import com.natuvida.store.entity.ProductPricing;
+import com.natuvida.store.exception.ValidationException;
 import com.natuvida.store.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,34 +11,62 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
+
 
 @Service
 public class ProductService {
   @Autowired
   ProductRepository productRepository;
 
+  @Autowired
+  ProductPricingService productPricingService;
+
   @Transactional(readOnly = true)
   public List<Product> getAllProducts(){
     return productRepository.findAll();
   }
 
+  @Transactional(readOnly = true)
+  public List<Product> getProductsByCategory(UUID categoryId){
+    return productRepository.findByCategoryId(categoryId);
+  }
+
   @Transactional
-  public Product createProduct(){
-    Product product = new Product("ColiPlus");
-    product.setDescription("Suplemento natural para la salud intestinal");
+  public Product saveOrUpdateProduct(UUID id, String name, String description, BigDecimal unitPrice,
+                                     BigDecimal priceTwoUnits, BigDecimal priceThreeUnits,
+                                     BigDecimal previousPrice, Category category) {
 
-    // Create pricing
-    ProductPricing pricing = new ProductPricing();
-    pricing.setUnitPrice(new BigDecimal("67900.00"));
-    pricing.setPriceTwoUnits(new BigDecimal("101850.00"));
-    pricing.setPriceThreeUnits(new BigDecimal("135800.00"));
-    pricing.setPreviousPrice(new BigDecimal("77900.00"));
+    if (name.isBlank()) {
+      throw new ValidationException("Nombre no puede ser vacío");
+    }
+    if (unitPrice == null) {
+      throw new ValidationException("El precio unitario debe contener un valor");
+    }
 
-    // Link pricing to product
-    pricing.setProduct(product);
+    ProductPricing pricing = productPricingService.setPrices(
+        unitPrice, priceTwoUnits, priceThreeUnits, previousPrice);
+
+    Product product;
+
+    if (id == null) {
+      product = new Product(name);
+    } else {
+      product = productRepository.findById(id)
+          .orElseThrow(() -> new ValidationException("Producto no encontrado"));
+      product.setName(name);
+    }
+
+    product.setDescription(description);
     product.setPricing(pricing);
+    product.setCategory(category);
 
-    // Save and return the product
     return productRepository.save(product);
   }
+
+  @Transactional
+  public void deleteProduct(UUID id){
+    productRepository.deleteById(id);
+  }
+
 }
