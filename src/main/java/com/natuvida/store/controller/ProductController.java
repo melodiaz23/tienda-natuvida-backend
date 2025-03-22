@@ -43,7 +43,7 @@ public class ProductController {
     return ResponseEntity.ok(ApiResponse.success(product, "Producto creado exitosamente"));
   }
 
-  @PutMapping("{/id}")
+  @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<Product>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request){
     Category category = categoryService.getCategoryById(request.getCategoryId());
 
