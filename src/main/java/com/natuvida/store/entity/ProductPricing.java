@@ -22,7 +22,9 @@ public class ProductPricing {
   @JoinColumn(name = "product_id")
   private Product product;
 
+  @Column(nullable = false)
   private BigDecimal unitPrice;
+
   private BigDecimal priceTwoUnits;
   private BigDecimal priceThreeUnits;
   private BigDecimal previousPrice;

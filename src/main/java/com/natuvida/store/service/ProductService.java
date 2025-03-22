@@ -44,8 +44,8 @@ public class ProductService {
       throw new ValidationException("El precio unitario debe contener un valor");
     }
 
-    ProductPricing pricing = productPricingService.setPrices(
-        unitPrice, priceTwoUnits, priceThreeUnits, previousPrice);
+    ProductPricing pricing = productPricingService.setOrUpdatePrices(
+        null, unitPrice, priceTwoUnits, priceThreeUnits, previousPrice);
 
     Product product;
 
