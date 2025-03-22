@@ -32,6 +32,11 @@ public class ProductService {
     return productRepository.findByCategoryId(categoryId);
   }
 
+  @Transactional(readOnly = true)
+  public Product getProductById(UUID id) {
+    return productRepository.getReferenceById(id);
+  }
+
   @Transactional
   public Product saveOrUpdateProduct(UUID id, String name, String description, BigDecimal unitPrice,
                                      BigDecimal priceTwoUnits, BigDecimal priceThreeUnits,
