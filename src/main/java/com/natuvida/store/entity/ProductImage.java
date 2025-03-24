@@ -16,12 +16,8 @@ public class ProductImage {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @ManyToOne
-  @JoinColumn(name = "product_id")
-  private Product product;
-
-  private String imageUrl;    // Store the cloud storage URL here
-  private String altText;     // For accessibility
+  private String imageUrl;
+  private String altText;
   private Integer displayOrder;
   private boolean isPrimary = false;
 
