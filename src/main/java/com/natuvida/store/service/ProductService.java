@@ -1,15 +1,20 @@
 package com.natuvida.store.service;
 
+import com.natuvida.store.dto.ProductImageDTO;
+import com.natuvida.store.dto.ProductPricingDTO;
 import com.natuvida.store.entity.Category;
 import com.natuvida.store.entity.Product;
+import com.natuvida.store.entity.ProductImage;
 import com.natuvida.store.entity.ProductPricing;
 import com.natuvida.store.exception.ValidationException;
+import com.natuvida.store.mapper.ProductImageMapper;
+import com.natuvida.store.mapper.ProductPricingMapper;
 import com.natuvida.store.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +26,15 @@ public class ProductService {
 
   @Autowired
   ProductPricingService productPricingService;
+
+  @Autowired
+  ProductImageService productImageService;
+
+  @Autowired
+  private ProductImageMapper productImageMapper;
+
+  @Autowired
+  private ProductPricingMapper productPricingMapper;
 
   @Transactional(readOnly = true)
   public List<Product> getAllProducts(){
@@ -34,23 +48,22 @@ public class ProductService {
 
   @Transactional(readOnly = true)
   public Product getProductById(UUID id) {
-    return productRepository.getReferenceById(id);
+    return productRepository.findById(id).orElseThrow(()-> new ValidationException("Producto no encontrado"));
   }
 
   @Transactional
-  public Product saveOrUpdateProduct(UUID id, String name, String description, BigDecimal unitPrice,
-                                     BigDecimal priceTwoUnits, BigDecimal priceThreeUnits,
-                                     BigDecimal previousPrice, Category category) {
+  public Product saveOrUpdateProduct(UUID id, String name, String description, String preparation,
+                                     String ingredients, ProductPricingDTO prices, Category category,
+                                     List<ProductImageDTO> images) {
 
     if (name.isBlank()) {
       throw new ValidationException("Nombre no puede ser vacío");
     }
-    if (unitPrice == null) {
+    if (prices.getUnitPrice() == null) {
       throw new ValidationException("El precio unitario debe contener un valor");
     }
 
-    ProductPricing pricing = productPricingService.setOrUpdatePrices(
-        null, unitPrice, priceTwoUnits, priceThreeUnits, previousPrice);
+    ProductPricing pricing = productPricingService.setOrUpdatePrices(productPricingMapper.toEntity(prices));
 
     Product product;
 
@@ -63,12 +76,27 @@ public class ProductService {
     }
 
     product.setDescription(description);
+    product.setPreparation(preparation);
+    product.setIngredients(ingredients);
     product.setPricing(pricing);
     product.setCategory(category);
 
+    product = productRepository.save(product);
+
+    if (images != null) {
+      List<ProductImage> productImages = productImageService.saveAll(productImageMapper.toEntityList(images));
+      if (product.getImages() == null) {
+        product.setImages(new ArrayList<>(productImages));
+      } else {
+        product.getImages().clear();
+        product.getImages().addAll(productImages);
+      }
+    } else if (product.getImages() != null) {
+      product.getImages().clear();
+    }
+
     return productRepository.save(product);
   }
-
   @Transactional
   public void deleteProduct(UUID id){
     productRepository.deleteById(id);
