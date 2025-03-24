@@ -7,19 +7,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(name = "product_pricing")
 public class ProductPricing {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-  @JsonBackReference
-  @OneToOne
-  @JoinColumn(name = "product_id")
+  @OneToOne(mappedBy = "pricing")
   private Product product;
 
   @Column(nullable = false)

@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 public class ProductPricingService {
@@ -17,21 +16,18 @@ public class ProductPricingService {
   ProductPricingRepository productPricingRepository;
 
   @Transactional
-  public ProductPricing setOrUpdatePrices(UUID idPricing, BigDecimal unitPrice,
-                                  BigDecimal priceTwoUnits,
-                                  BigDecimal priceThreeUnits,
-                                  BigDecimal previousPrice){
-    if (unitPrice==null) throw new ValidationException("Precio unitario es obligatorio");
+  public ProductPricing setOrUpdatePrices(ProductPricing productPricing){
+    if (productPricing.getUnitPrice()==null) throw new ValidationException("Precio unitario es obligatorio");
     ProductPricing prices;
-    if (idPricing == null){
+    if (productPricing.getId() == null){
       prices = new ProductPricing();
     } else {
-      prices = productPricingRepository.getReferenceById(idPricing);
+      prices = productPricingRepository.getReferenceById(productPricing.getId());
     }
-    prices.setUnitPrice(unitPrice);
-    prices.setPriceTwoUnits(Objects.requireNonNullElseGet(priceTwoUnits, () -> unitPrice.multiply(BigDecimal.valueOf(2))));
-    prices.setPriceThreeUnits(Objects.requireNonNullElseGet(priceThreeUnits, () -> unitPrice.multiply(BigDecimal.valueOf(3))));
-    prices.setPreviousPrice(Objects.requireNonNullElseGet(previousPrice, null));
+    prices.setUnitPrice(productPricing.getUnitPrice());
+    prices.setPriceTwoUnits(Objects.requireNonNullElseGet(productPricing.getPriceTwoUnits(), () -> productPricing.getUnitPrice().multiply(BigDecimal.valueOf(2))));
+    prices.setPriceThreeUnits(Objects.requireNonNullElseGet(productPricing.getPriceThreeUnits(), () ->productPricing.getUnitPrice().multiply(BigDecimal.valueOf(3))));
+    prices.setPreviousPrice(Objects.requireNonNullElseGet(productPricing.getPreviousPrice(), null));
     return productPricingRepository.save(prices);
   }
 
