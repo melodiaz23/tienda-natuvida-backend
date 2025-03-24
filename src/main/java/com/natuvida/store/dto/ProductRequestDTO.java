@@ -2,8 +2,7 @@ package com.natuvida.store.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -11,10 +10,10 @@ import java.util.UUID;
 public class ProductRequestDTO {
   private String name;
   private String description;
-  private BigDecimal unitPrice;
-  private BigDecimal priceTwoUnits;
-  private BigDecimal priceThreeUnits;
-  private BigDecimal previousPrice;
+  private String preparation;
+  private String ingredients;
+  private ProductPricingDTO pricing;
   private UUID categoryId;
+  private List<ProductImageDTO> images;
 
 }
