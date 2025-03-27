@@ -18,6 +18,11 @@ public final class ApiPaths {
   public static final String LOGIN = AUTH + "/login";
   public static final String REGISTER = AUTH + "/register";
 
+  // OAuth endpoints
+  public static final String OAUTH2 = API_BASE + "/oauth2";
+  public static final String OAUTH2_SUCCESS = OAUTH2 + "/success";
+  public static final String OAUTH2_FAILURE = OAUTH2 + "/failure";
+
   // Private constructor to prevent instantiation
   private ApiPaths() {
     throw new AssertionError("Utility class should not be instantiated");
