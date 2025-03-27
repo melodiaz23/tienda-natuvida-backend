@@ -1,6 +1,7 @@
 package com.natuvida.store.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,7 +24,7 @@ public class Customer {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "user_id", unique = true)
   private User user;
 
@@ -51,9 +52,6 @@ public class Customer {
 
   @OneToMany(mappedBy = "customer") // Lazy by default
   private List<Order> orders = new ArrayList<>(); // Prevent null pointer exceptions
-
-  @Column(name = "email", unique = true)
-  private String email;
 
 //   Set up automatic date/time tracking -  Spring Data JPA's Auditing
   @Column(name = "created_at")
