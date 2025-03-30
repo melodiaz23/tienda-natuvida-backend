@@ -1,8 +1,8 @@
 package com.natuvida.store.controller;
 
 import com.natuvida.store.api.response.ApiResponse;
-import com.natuvida.store.dto.ProductDTO;
-import com.natuvida.store.dto.ProductRequestDTO;
+import com.natuvida.store.dto.response.ProductDTO;
+import com.natuvida.store.dto.request.ProductRequestDTO;
 import com.natuvida.store.entity.Category;
 import com.natuvida.store.entity.Product;
 import com.natuvida.store.mapper.ProductMapper;
@@ -12,7 +12,7 @@ import com.natuvida.store.util.ApiPaths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+    import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -29,10 +29,12 @@ public class ProductController {
   private ProductMapper productMapper;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@RequestBody ProductRequestDTO request){
-    Category category = null;
-    if (request.getCategoryId() != null) {
-      category = categoryService.getCategoryById(request.getCategoryId());
+  public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@RequestBody ProductRequestDTO request) {
+    List<Category> categories = null;
+    if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+      categories = request.getCategoryIds().stream()
+          .map(categoryService::getCategoryById)
+          .toList();
     }
 
     Product product = productService.saveOrUpdateProduct(
@@ -42,7 +44,7 @@ public class ProductController {
         request.getPreparation(),
         request.getIngredients(),
         request.getPricing(),
-        category,
+        categories,
         request.getImages()
     );
 
@@ -65,10 +67,12 @@ public class ProductController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request){
-    Category category = null;
-    if (request.getCategoryId() != null) {
-      category = categoryService.getCategoryById(request.getCategoryId());
+  public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
+    List<Category> categories = null;
+    if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+      categories = request.getCategoryIds().stream()
+          .map(categoryService::getCategoryById)
+          .toList();
     }
 
     Product product = productService.saveOrUpdateProduct(
@@ -78,7 +82,7 @@ public class ProductController {
         request.getPreparation(),
         request.getIngredients(),
         request.getPricing(),
-        category,
+        categories,
         request.getImages()
     );
     ProductDTO productDTO = productMapper.toDto(product);
@@ -86,12 +90,9 @@ public class ProductController {
     return ResponseEntity.ok(ApiResponse.success(productDTO, "Producto actualizado exitosamente"));
   }
 
-
   @DeleteMapping("/{id}")
-  public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable UUID id){
+  public ResponseEntity<ApiResponse<Void>> deleteProduct(@PathVariable UUID id) {
     productService.deleteProduct(id);
     return ResponseEntity.ok(ApiResponse.success(null, "Producto eliminado exitosamente"));
   }
-
-
 }

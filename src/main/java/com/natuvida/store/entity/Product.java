@@ -40,9 +40,13 @@ public class Product {
   @JoinColumn(name = "pricing_id")
   private ProductPricing pricing;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "category_id")
-  private Category category;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "product_categories",  // Nombre de la tabla intermedia
+      joinColumns = @JoinColumn(name = "product_id"),  // Columna que referencia a esta entidad
+      inverseJoinColumns = @JoinColumn(name = "category_id")  // Columna que referencia a la otra entidad
+  )
+  private List<Category> categories = new ArrayList<>();
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "product_id")

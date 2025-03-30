@@ -1,5 +1,6 @@
-package com.natuvida.store.dto;
+package com.natuvida.store.dto.response;
 
+import com.natuvida.store.dto.ProductImageDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,8 +21,8 @@ public class ProductDTO {
   private String preparation;
   private String ingredients;
   private ProductPricingDTO pricing;
-  private UUID categoryId;
-  private String categoryName;  // Added for frontend display
+  private List<UUID> categoryIds;        // Cambiado de UUID a List<UUID>
+  private List<String> categoryNames;    // Cambiado de String a List<String>
   private List<ProductImageDTO> images;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;

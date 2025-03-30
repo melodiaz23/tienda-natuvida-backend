@@ -1,7 +1,7 @@
 package com.natuvida.store.service;
 
 import com.natuvida.store.dto.ProductImageDTO;
-import com.natuvida.store.dto.ProductPricingDTO;
+import com.natuvida.store.dto.response.ProductPricingDTO;
 import com.natuvida.store.entity.Category;
 import com.natuvida.store.entity.Product;
 import com.natuvida.store.entity.ProductImage;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 
 @Service
 public class ProductService {
@@ -43,7 +42,7 @@ public class ProductService {
 
   @Transactional(readOnly = true)
   public List<Product> getProductsByCategory(UUID categoryId){
-    return productRepository.findByCategoryId(categoryId);
+    return productRepository.findByCategoriesId(categoryId);
   }
 
   @Transactional(readOnly = true)
@@ -51,9 +50,10 @@ public class ProductService {
     return productRepository.findById(id).orElseThrow(()-> new ValidationException("Producto no encontrado"));
   }
 
+
   @Transactional
   public Product saveOrUpdateProduct(UUID id, String name, String description, String preparation,
-                                     String ingredients, ProductPricingDTO prices, Category category,
+                                     String ingredients, ProductPricingDTO prices, List<Category> categories,
                                      List<ProductImageDTO> images) {
 
     if (name.isBlank()) {
@@ -79,7 +79,18 @@ public class ProductService {
     product.setPreparation(preparation);
     product.setIngredients(ingredients);
     product.setPricing(pricing);
-    product.setCategory(category);
+
+    // Actualizar categorías
+    if (categories != null) {
+      if (product.getCategories() == null) {
+        product.setCategories(new ArrayList<>(categories));
+      } else {
+        product.getCategories().clear();
+        product.getCategories().addAll(categories);
+      }
+    } else if (product.getCategories() != null) {
+      product.getCategories().clear();
+    }
 
     product = productRepository.save(product);
 
@@ -97,6 +108,7 @@ public class ProductService {
 
     return productRepository.save(product);
   }
+
   @Transactional
   public void deleteProduct(UUID id){
     productRepository.deleteById(id);
