@@ -11,7 +11,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class UserDTO {
-
   private UUID id;
   private String email;
   private String username;
@@ -19,6 +18,6 @@ public class UserDTO {
   private LocalDateTime updatedAt;
   private Set<Role> roles;
   private boolean enabled;
-  private boolean isCustomer;
+  private boolean customer;
 
 }

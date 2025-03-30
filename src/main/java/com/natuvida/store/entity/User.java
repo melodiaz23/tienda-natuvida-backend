@@ -12,10 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Getter
@@ -43,10 +40,7 @@ public class User implements UserDetails {
   private LocalDateTime updatedAt;
 
   @Enumerated(EnumType.STRING)
-  @ElementCollection(fetch = FetchType.EAGER)
-  @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-  @Column(name = "role")
-  private Set<Role> roles = new HashSet<>(); // Set ensure that cannot contain duplicate elements
+  private Role role;
 
   private String password;
 
@@ -65,7 +59,7 @@ public class User implements UserDetails {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     Set<GrantedAuthority> authorities = new HashSet<>();
-    for (Role role : roles) {
+    if (role != null) {
       authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
     return authorities;

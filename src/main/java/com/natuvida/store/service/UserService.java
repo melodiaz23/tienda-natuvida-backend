@@ -11,16 +11,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
-
 
   @Transactional
   public UserDTO registerUser(UserRequestDTO requestDTO) {
@@ -30,9 +26,8 @@ public class UserService {
     user.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
     user.setEnabled(true);
 
-    Set<Role> roles = new HashSet<>();
-    roles.add(Role.USER);
-    user.setRoles(roles);
+    // Asignar el rol USER directamente
+    user.setRole(Role.USER);
 
     User savedUser = userRepository.save(user);
     return userMapper.toDto(savedUser);

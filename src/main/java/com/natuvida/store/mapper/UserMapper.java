@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-  @Mapping(target = "isCustomer", expression = "java(entity.isCustomer())")
+  @Mapping(target = "customer", expression = "java(entity.isCustomer())")
   UserDTO toDto(User entity);
 
   // Creating new users
@@ -31,7 +31,7 @@ public interface UserMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
-  @Mapping(target = "roles", ignore = true)
+  @Mapping(target = "role", ignore = true)
   @Mapping(target = "enabled", constant = "true") // New users are enabled by default
   @Mapping(target = "customer", ignore = true)
   @Mapping(target = "authorities", ignore = true)
