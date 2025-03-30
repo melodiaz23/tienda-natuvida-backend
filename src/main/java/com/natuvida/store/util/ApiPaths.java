@@ -17,6 +17,7 @@ public final class ApiPaths {
   public static final String AUTH = API_BASE_PATH + "/auth";
   public static final String LOGIN = AUTH + "/login";
   public static final String REGISTER = AUTH + "/register";
+  public static final String REFRESH_TOKEN = AUTH + "/refresh-token";
 
   // OAuth endpoints
   public static final String OAUTH2 = API_BASE + "/oauth2";
