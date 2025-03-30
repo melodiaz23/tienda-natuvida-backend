@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,8 +29,8 @@ public class Category {
   @Column(length = 255)
   private String description;
 
-  @OneToMany(mappedBy = "category") // Bidirectional relationship
-  private List<Product> products;
+  @ManyToMany(mappedBy = "categories")
+  private List<Product> products = new ArrayList<>();
 
   @Column(name = "created_at")
   @CreatedDate

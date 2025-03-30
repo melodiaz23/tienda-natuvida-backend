@@ -1,4 +1,4 @@
-package com.natuvida.store.dto;
+package com.natuvida.store.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -1,6 +1,6 @@
 package com.natuvida.store.mapper;
 
-import com.natuvida.store.dto.CategoryDTO;
+import com.natuvida.store.dto.response.CategoryDTO;
 import com.natuvida.store.entity.Category;
 import org.mapstruct.Mapper;
 
