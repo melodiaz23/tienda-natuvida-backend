@@ -3,8 +3,9 @@ package com.natuvida.store.config;
 import com.natuvida.store.security.CustomOAuth2UserService;
 import com.natuvida.store.security.CustomUserDetailsService;
 import com.natuvida.store.util.ApiPaths;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,8 +16,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,6 +28,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,6 +40,10 @@ public class SecurityConfig {
 
   private final CustomOAuth2UserService customOAuth2UserService;
   private final CustomUserDetailsService customUserDetailsService;
+
+  @Value("${app.jwt.secret}")
+  private String jwtSecret;
+
 
   public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomUserDetailsService customUserDetailsService) {
     this.customOAuth2UserService = customOAuth2UserService;
@@ -91,7 +99,6 @@ public class SecurityConfig {
             // Read-only endpoints for products and categories
             .requestMatchers(HttpMethod.GET, ApiPaths.CATEGORIES + "/**").permitAll()
             .requestMatchers(HttpMethod.GET, ApiPaths.PRODUCTS + "/**").permitAll()
-
             // Admin-only operations for products and categories
             .requestMatchers(HttpMethod.POST, ApiPaths.PRODUCTS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, ApiPaths.PRODUCTS + "/**").hasRole("ADMIN")
@@ -135,7 +142,8 @@ public class SecurityConfig {
             .failureUrl("/api/auth/oauth2/failure")
             // Custom user service to process OAuth2 users
             .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-        ).authenticationProvider(authenticationProvider());
+        )
+        .authenticationProvider(authenticationProvider());
 
     return http.build();
   }
@@ -181,8 +189,8 @@ public class SecurityConfig {
   @Bean
   public JwtAuthenticationConverter jwtAuthenticationConverter() {
     JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-    grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
-    grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+    grantedAuthoritiesConverter.setAuthoritiesClaimName("role");
+    grantedAuthoritiesConverter.setAuthorityPrefix(""); // Quitar el prefijo, ya que tu token ya incluye "ROLE_"
 
     JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
     jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
@@ -197,9 +205,17 @@ public class SecurityConfig {
     return authProvider;
   }
 
+//  @Bean
+//  public JwtDecoder jwtDecoder(OAuth2ResourceServerProperties properties) {
+//    return JwtDecoders.fromIssuerLocation(properties.getJwt().getIssuerUri());
+//  }
+
   @Bean
-  public JwtDecoder jwtDecoder(OAuth2ResourceServerProperties properties) {
-    return JwtDecoders.fromIssuerLocation(properties.getJwt().getIssuerUri());
+  public JwtDecoder jwtDecoder() {
+    SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    return NimbusJwtDecoder.withSecretKey(key)
+        .macAlgorithm(MacAlgorithm.HS512)  // Cambiado de HS256 a HS512
+        .build();
   }
 
 }

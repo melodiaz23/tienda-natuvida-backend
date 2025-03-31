@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
@@ -27,36 +26,52 @@ public class JwtTokenProvider {
   @Value("${app.jwt.refresh.secret:${app.jwt.secret}}")
   private String refreshTokenSecret;
 
+  @Value("${app.jwt.refresh.secret:}")
+  private String refreshTokenSecretOverride;
+
+  // Constructor sin parámetros RSA
+  public JwtTokenProvider() {
+    // Constructor vacío
+  }
+
   // Generate an access token
   public String generateToken(Authentication authentication) {
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
     String username = authentication.getName();
-    String roles = authentication.getAuthorities().stream()
+    // Obtener el único rol del usuario (si existe)
+    String role = authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.joining(","));
+        .findFirst()
+        .orElse(null);
 
     SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 
-    return Jwts.builder()
+    JwtBuilder builder = Jwts.builder()
         .setSubject(username)
-        .claim("roles", roles)
         .claim("tokenType", "access")
         .setIssuedAt(now)
-        .setExpiration(expiryDate)
-        .signWith(key)
-        .compact();
+        .setExpiration(expiryDate);
+
+    if (role != null && !role.startsWith("ROLE_")) {
+      role = "ROLE_" + role;
+    }
+
+    if (role != null) {
+      builder.claim("role", role);
+    }
+
+    return builder.signWith(key).compact();
   }
 
   // Generate a refresh token
   public String generateRefreshToken(Authentication authentication) {
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + refreshTokenExpirationMs);
-
     String username = authentication.getName();
 
-    SecretKey key = Keys.hmacShaKeyFor(refreshTokenSecret.getBytes(StandardCharsets.UTF_8));
+    SecretKey key = Keys.hmacShaKeyFor(getRefreshTokenSecret().getBytes(StandardCharsets.UTF_8));
 
     return Jwts.builder()
         .setSubject(username)
@@ -80,9 +95,8 @@ public class JwtTokenProvider {
     return claims.getSubject();
   }
 
-  // Get username from refresh token
   public String getUsernameFromRefreshToken(String token) {
-    SecretKey key = Keys.hmacShaKeyFor(refreshTokenSecret.getBytes(StandardCharsets.UTF_8));
+    SecretKey key = Keys.hmacShaKeyFor(getRefreshTokenSecret().getBytes(StandardCharsets.UTF_8));
 
     Claims claims = Jwts.parserBuilder()
         .setSigningKey(key)
@@ -115,7 +129,7 @@ public class JwtTokenProvider {
   // Validate refresh token
   public boolean validateRefreshToken(String token) {
     try {
-      SecretKey key = Keys.hmacShaKeyFor(refreshTokenSecret.getBytes(StandardCharsets.UTF_8));
+      SecretKey key = Keys.hmacShaKeyFor(getRefreshTokenSecret().getBytes(StandardCharsets.UTF_8));
 
       Claims claims = Jwts.parserBuilder()
           .setSigningKey(key)
@@ -127,7 +141,14 @@ public class JwtTokenProvider {
       String tokenType = (String) claims.get("tokenType");
       return "refresh".equals(tokenType);
     } catch (JwtException | IllegalArgumentException e) {
+      System.err.println("Refresh token validation failed: " + e.getMessage());
       return false;
     }
+  }
+
+  private String getRefreshTokenSecret() {
+    return (refreshTokenSecretOverride != null && !refreshTokenSecretOverride.isEmpty())
+        ? refreshTokenSecretOverride
+        : jwtSecret;
   }
 }

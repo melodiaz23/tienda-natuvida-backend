@@ -109,12 +109,37 @@ public class AuthController {
 
   @PostMapping("/refresh-token")
   public ResponseEntity<ApiResponse<AuthResponseDTO>> refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
+    // Get the refresh token from the request
     String refreshToken = refreshTokenRequest.getRefreshToken();
 
-    // Validate the refresh token
-    if (jwtTokenProvider.validateRefreshToken(refreshToken)) {
+    // Add basic validation
+    if (refreshToken == null || refreshToken.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(ApiResponse.error("Refresh token is required"));
+    }
+
+    try {
+      // Validate the refresh token
+      if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error("Invalid or expired refresh token"));
+      }
+
+      // Extract username from the refresh token
       String username = jwtTokenProvider.getUsernameFromRefreshToken(refreshToken);
-      UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+      if (username == null || username.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error("Invalid token - cannot extract username"));
+      }
+
+      // Load the user details
+      UserDetails userDetails;
+      try {
+        userDetails = customUserDetailsService.loadUserByUsername(username);
+      } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error("User not found or no longer active"));
+      }
 
       // Create new authentication object
       Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -124,12 +149,14 @@ public class AuthController {
       String newAccessToken = jwtTokenProvider.generateToken(authentication);
       String newRefreshToken = jwtTokenProvider.generateRefreshToken(authentication);
 
+      // Create user DTO
       User user = (User) userDetails;
       UserDTO userDTO = userMapper.toDto(user);
 
-      // Determine redirect URL based on user role
+      // Determine redirect URL
       String redirectUrl = determineRedirectUrl(user.getRole());
 
+      // Build response object
       AuthResponseDTO authResponse = new AuthResponseDTO(
           newAccessToken,
           newRefreshToken,
@@ -138,9 +165,12 @@ public class AuthController {
       );
 
       return ResponseEntity.ok(ApiResponse.success(authResponse, "Token refreshed successfully"));
-    } else {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(ApiResponse.error("Invalid or expired refresh token"));
+
+    } catch (Exception e) {
+      // Log the exception for debugging
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(ApiResponse.error("An error occurred during token refresh: " + e.getMessage()));
     }
   }
 }
