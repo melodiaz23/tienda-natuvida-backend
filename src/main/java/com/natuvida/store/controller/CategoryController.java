@@ -19,8 +19,8 @@ import java.util.UUID;
 @RequestMapping(ApiPaths.CATEGORIES)
 public class CategoryController {
 
-  private CategoryService categoryService;
-  private CategoryMapper categoryMapper;
+  private final CategoryService categoryService;
+  private final CategoryMapper categoryMapper;
 
   @PostMapping
   public ResponseEntity<ApiResponse<CategoryDTO>> createCategory(@RequestBody CategoryRequestDTO request){

@@ -3,6 +3,7 @@ package com.natuvida.store.service;
 import com.natuvida.store.entity.Category;
 import com.natuvida.store.exception.ValidationException;
 import com.natuvida.store.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,10 +12,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryService {
 
-  @Autowired
-  CategoryRepository categoryRepository;
+  private final CategoryRepository categoryRepository;
 
   @Transactional(readOnly = true)
   public List<Category> getAllCategories(){

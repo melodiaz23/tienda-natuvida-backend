@@ -40,4 +40,7 @@ public class Category {
   @LastModifiedDate
   private LocalDateTime updatedAt;
 
+  @Column(nullable = false)
+  private Boolean enabled = true;
+
 }
