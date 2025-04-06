@@ -62,6 +62,9 @@ public class Customer {
   @LastModifiedDate // automatically updates the field when the entity is modified
   private LocalDateTime updatedAt;
 
+  @Column(nullable = false)
+  private Boolean enabled = true;
+
   @Transient // Marks a field or method as not being persisted to the database
   public String getFullName() {
     return firstName + " " + lastName;
