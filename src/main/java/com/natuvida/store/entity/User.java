@@ -44,7 +44,8 @@ public class User implements UserDetails {
 
   private String password;
 
-  private boolean enabled = true;
+  @Column(nullable = false)
+  private Boolean enabled = true;
 
   // A User may or may not have a Customer profile
   //  Deleting a User will NOT delete the associated Customer.

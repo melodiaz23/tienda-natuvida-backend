@@ -13,6 +13,7 @@ import java.util.List;
 public interface UserMapper {
 
   @Mapping(target = "customer", expression = "java(entity.isCustomer())")
+  @Mapping(target = "role", source = "role")
   UserDTO toDto(User entity);
 
   // Creating new users

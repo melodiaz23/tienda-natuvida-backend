@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -16,7 +15,7 @@ public class UserDTO {
   private String username;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
-  private Set<Role> roles;
+  private Role role;
   private boolean enabled;
   private boolean customer;
 
