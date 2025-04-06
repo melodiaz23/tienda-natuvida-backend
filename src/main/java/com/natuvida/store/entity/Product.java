@@ -5,6 +5,8 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,18 +29,32 @@ public class Product {
   @Column(nullable = false, length = 50)
   private String name;
 
-  @Column(length = 500)
+  @Column(length = 2000)
   private String description;
 
-  @Column(length = 500)
-  private String preparation;
+  private String presentation;
 
-  @Column(length = 250)
-  private String ingredients;
+  @ElementCollection
+  @CollectionTable(name = "product_ingredients", joinColumns = @JoinColumn(name = "product_id"))
+  @Column(name = "ingredient")
+  private List<String> ingredients = new ArrayList<>();
+
+  @ElementCollection
+  @CollectionTable(name = "product_benefits", joinColumns = @JoinColumn(name = "product_id"))
+  @Column(name = "benefit", length = 500)
+  private List<String> benefits = new ArrayList<>();
+
+  @ElementCollection
+  @CollectionTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"))
+  @Column(name = "tag")
+  private List<String> tags = new ArrayList<>();
+
+  @Column(length = 500)
+  private String usageMode;
 
   @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "pricing_id")
-  private ProductPricing pricing;
+  @JoinColumn(name = "price_id")
+  private Price price;
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
@@ -63,22 +79,7 @@ public class Product {
   @OneToMany(mappedBy = "product")
   private List<OrderItem> orderItems;
 
-  public void addImage(ProductImage image) {
-    images.add(image);
-  }
-
-  public void removeImage(ProductImage image) {
-    images.remove(image);
-  }
-
-//  The field exists only in the Java object,
-  @Transient // tell JPA don't map this getter to a database column
-  public String getPrimaryImageUrl() {
-    return images.stream()
-        .filter(ProductImage::isPrimary)
-        .findFirst()
-        .map(ProductImage::getImageUrl)
-        .orElse(null);
-  }
+  @Column(nullable = false)
+  private boolean enabled = true;
 
 }

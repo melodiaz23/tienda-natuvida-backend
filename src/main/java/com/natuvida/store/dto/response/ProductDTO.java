@@ -1,6 +1,5 @@
 package com.natuvida.store.dto.response;
 
-import com.natuvida.store.dto.ProductImageDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,12 +17,15 @@ public class ProductDTO {
   private UUID id;
   private String name;
   private String description;
-  private String preparation;
-  private String ingredients;
-  private ProductPricingDTO pricing;
-  private List<UUID> categoryIds;        // Cambiado de UUID a List<UUID>
-  private List<String> categoryNames;    // Cambiado de String a List<String>
+  private String presentation;
+  private List<String> ingredients;
+  private List<String> benefits;
+  private List<String> tags;
+  private String usageMode;
+  private PriceDTO price;
+  private List<CategoryDTO> categories;
   private List<ProductImageDTO> images;
+  private boolean enabled;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 
@@ -31,11 +33,10 @@ public class ProductDTO {
     if (images == null || images.isEmpty()) {
       return null;
     }
-
     return images.stream()
         .filter(ProductImageDTO::isPrimary)
         .findFirst()
         .map(ProductImageDTO::getImageUrl)
-        .orElse(images.get(0).getImageUrl());  // Fallback to first image
+        .orElse(images.get(0).getImageUrl());
   }
 }

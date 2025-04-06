@@ -9,49 +9,58 @@ import com.natuvida.store.mapper.ProductMapper;
 import com.natuvida.store.service.CategoryService;
 import com.natuvida.store.service.ProductService;
 import com.natuvida.store.util.ApiPaths;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-    import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping(ApiPaths.PRODUCTS)
 public class ProductController {
 
-  @Autowired
-  ProductService productService;
-
-  @Autowired
-  CategoryService categoryService;
-
-  @Autowired
+  private ProductService productService;
+  private CategoryService categoryService;
   private ProductMapper productMapper;
 
   @PostMapping
   public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@RequestBody ProductRequestDTO request) {
-    List<Category> categories = null;
-    if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
-      categories = request.getCategoryIds().stream()
-          .map(categoryService::getCategoryById)
+    List<Category> categories = new ArrayList<>();
+    if (request.getCategories() != null && !request.getCategories().isEmpty()) {
+      categories = request.getCategories().stream()
+          .filter(category -> category != null && category.getId() != null)
+          .map(category -> categoryService.getCategoryById(category.getId()))
           .toList();
     }
 
-    Product product = productService.saveOrUpdateProduct(
-        null,
-        request.getName(),
-        request.getDescription(),
-        request.getPreparation(),
-        request.getIngredients(),
-        request.getPricing(),
-        categories,
-        request.getImages()
-    );
 
-    ProductDTO productDTO = productMapper.toDto(product);
+    Product product = productMapper.toEntity(request);
+    product.setCategories(categories);
+
+    ProductDTO productDTO = productMapper.toDto(productService.saveOrUpdateProduct(product));
     return ResponseEntity.ok(ApiResponse.success(productDTO, "Producto creado exitosamente"));
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
+    List<Category> categories = new ArrayList<>();
+
+    if (request.getCategories() != null && !request.getCategories().isEmpty()) {
+      categories = request.getCategories().stream()
+          .filter(category -> category != null && category.getId() != null)
+          .map(category -> categoryService.getCategoryById(category.getId()))
+          .toList();
+    }
+
+    Product product = productMapper.toEntity(request);
+    product.setId(id); // Ensure ID is set for update
+    product.setCategories(categories);
+
+    ProductDTO productDTO = productMapper.toDto(productService.saveOrUpdateProduct(product));
+    return ResponseEntity.ok(ApiResponse.success(productDTO, "Producto actualizado exitosamente"));
+  }
   @GetMapping
   public ResponseEntity<ApiResponse<List<ProductDTO>>> getAllProducts() {
     List<Product> products = productService.getAllProducts();
@@ -64,30 +73,6 @@ public class ProductController {
     Product product = productService.getProductById(id);
     ProductDTO productDTO = productMapper.toDto(product);
     return ResponseEntity.ok(ApiResponse.success(productDTO, "Consulta exitosa."));
-  }
-
-  @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
-    List<Category> categories = null;
-    if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
-      categories = request.getCategoryIds().stream()
-          .map(categoryService::getCategoryById)
-          .toList();
-    }
-
-    Product product = productService.saveOrUpdateProduct(
-        id,
-        request.getName(),
-        request.getDescription(),
-        request.getPreparation(),
-        request.getIngredients(),
-        request.getPricing(),
-        categories,
-        request.getImages()
-    );
-    ProductDTO productDTO = productMapper.toDto(product);
-
-    return ResponseEntity.ok(ApiResponse.success(productDTO, "Producto actualizado exitosamente"));
   }
 
   @DeleteMapping("/{id}")

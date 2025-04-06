@@ -1,16 +1,10 @@
 package com.natuvida.store.service;
 
-import com.natuvida.store.dto.ProductImageDTO;
-import com.natuvida.store.dto.response.ProductPricingDTO;
-import com.natuvida.store.entity.Category;
+import com.natuvida.store.entity.Price;
 import com.natuvida.store.entity.Product;
-import com.natuvida.store.entity.ProductImage;
-import com.natuvida.store.entity.ProductPricing;
 import com.natuvida.store.exception.ValidationException;
-import com.natuvida.store.mapper.ProductImageMapper;
-import com.natuvida.store.mapper.ProductPricingMapper;
 import com.natuvida.store.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,21 +13,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
-  @Autowired
-  ProductRepository productRepository;
 
-  @Autowired
-  ProductPricingService productPricingService;
-
-  @Autowired
-  ProductImageService productImageService;
-
-  @Autowired
-  private ProductImageMapper productImageMapper;
-
-  @Autowired
-  private ProductPricingMapper productPricingMapper;
+  private final ProductRepository productRepository;
+  private final PriceService priceService;
 
   @Transactional(readOnly = true)
   public List<Product> getAllProducts(){
@@ -50,61 +34,43 @@ public class ProductService {
     return productRepository.findById(id).orElseThrow(()-> new ValidationException("Producto no encontrado"));
   }
 
-
   @Transactional
-  public Product saveOrUpdateProduct(UUID id, String name, String description, String preparation,
-                                     String ingredients, ProductPricingDTO prices, List<Category> categories,
-                                     List<ProductImageDTO> images) {
+  public Product saveOrUpdateProduct(Product productRequest) {
+    Product product;
+    if (productRequest.getId() == null) {
+      product = new Product(productRequest.getName());
+    } else {
+      product = productRepository.findById(productRequest.getId())
+          .orElseThrow(() -> new ValidationException("Producto no encontrado"));
+      product.setName(productRequest.getName());
+    }
 
-    if (name.isBlank()) {
+    product.setDescription(productRequest.getDescription());
+    product.setPresentation(productRequest.getPresentation());
+    product.setIngredients(
+        updateList(product.getIngredients(), productRequest.getIngredients()));
+    product.setBenefits(
+        updateList(product.getBenefits(), productRequest.getBenefits()));
+    product.setTags(
+        updateList(product.getTags(), productRequest.getTags()));
+    product.setUsageMode(productRequest.getUsageMode());
+
+    if (productRequest.getName().isBlank()) {
       throw new ValidationException("Nombre no puede ser vacío");
     }
-    if (prices.getUnitPrice() == null) {
+    if (productRequest.getPrice().getUnit() == null) {
       throw new ValidationException("El precio unitario debe contener un valor");
     }
 
-    ProductPricing pricing = productPricingService.setOrUpdatePrices(productPricingMapper.toEntity(prices));
-
-    Product product;
-
-    if (id == null) {
-      product = new Product(name);
-    } else {
-      product = productRepository.findById(id)
-          .orElseThrow(() -> new ValidationException("Producto no encontrado"));
-      product.setName(name);
-    }
-
-    product.setDescription(description);
-    product.setPreparation(preparation);
-    product.setIngredients(ingredients);
-    product.setPricing(pricing);
-
-    // Actualizar categorías
-    if (categories != null) {
-      if (product.getCategories() == null) {
-        product.setCategories(new ArrayList<>(categories));
-      } else {
-        product.getCategories().clear();
-        product.getCategories().addAll(categories);
-      }
-    } else if (product.getCategories() != null) {
-      product.getCategories().clear();
-    }
+    Price prices = priceService.setOrUpdatePrices(productRequest.getPrice());
+    product.setPrice(prices);
+    product.setCategories(
+        updateList(product.getCategories(), productRequest.getCategories()));
 
     product = productRepository.save(product);
 
-    if (images != null) {
-      List<ProductImage> productImages = productImageService.saveAll(productImageMapper.toEntityList(images));
-      if (product.getImages() == null) {
-        product.setImages(new ArrayList<>(productImages));
-      } else {
-        product.getImages().clear();
-        product.getImages().addAll(productImages);
-      }
-    } else if (product.getImages() != null) {
-      product.getImages().clear();
-    }
+    product.setImages(
+        updateList(product.getImages(), productRequest.getImages()));
 
     return productRepository.save(product);
   }
@@ -112,6 +78,21 @@ public class ProductService {
   @Transactional
   public void deleteProduct(UUID id){
     productRepository.deleteById(id);
+  }
+
+
+  private <T> List<T> updateList(List<T> currentList, List<T> newList){
+    if (newList != null) {
+      if (currentList == null) {
+        currentList = new ArrayList<>(newList);
+      } else {
+        currentList.clear();
+        currentList.addAll(newList);
+      }
+    } else if (currentList != null) {
+      currentList.clear();
+    }
+    return currentList;
   }
 
 }
