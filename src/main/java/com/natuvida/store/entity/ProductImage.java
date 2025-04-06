@@ -15,10 +15,12 @@ public class ProductImage {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
-
   private String imageUrl;
   private String altText;
   private Integer displayOrder;
   private boolean isPrimary = false;
+
+  @Version
+  private int version;
 
 }
