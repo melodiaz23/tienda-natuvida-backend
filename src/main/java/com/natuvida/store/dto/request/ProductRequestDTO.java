@@ -14,6 +14,7 @@ import java.util.UUID;
 public class ProductRequestDTO {
   private UUID id;
   private String name;
+  private String customName;
   private String description;
   private String presentation;
   private List<String> ingredients;

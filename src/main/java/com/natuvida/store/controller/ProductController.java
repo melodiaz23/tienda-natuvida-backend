@@ -1,6 +1,7 @@
 package com.natuvida.store.controller;
 
 import com.natuvida.store.api.response.ApiResponse;
+import com.natuvida.store.dto.response.CategoryDTO;
 import com.natuvida.store.dto.response.ProductDTO;
 import com.natuvida.store.dto.request.ProductRequestDTO;
 import com.natuvida.store.entity.Category;
@@ -27,44 +28,21 @@ public class ProductController {
 
   @PostMapping
   public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@RequestBody ProductRequestDTO request) {
-    List<Category> categories = new ArrayList<>();
-    if (request.getCategories() != null && !request.getCategories().isEmpty()) {
-      categories = request.getCategories().stream()
-          .filter(category -> category != null && category.getId() != null)
-          .map(category -> categoryService.getCategoryById(category.getId()))
-          .toList();
-    }
-
-
-    Product product = productMapper.toEntity(request);
-    product.setCategories(categories);
-
-    ProductDTO productDTO = productMapper.toDto(productService.saveOrUpdateProduct(product));
-    return ResponseEntity.ok(ApiResponse.success(productDTO, "Producto creado exitosamente"));
+    ProductDTO newProduct = productService.saveOrUpdateProduct(request);
+    return ResponseEntity.ok(ApiResponse.success(newProduct, "Producto creado exitosamente"));
   }
+
 
   @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
-    List<Category> categories = new ArrayList<>();
-
-    if (request.getCategories() != null && !request.getCategories().isEmpty()) {
-      categories = request.getCategories().stream()
-          .filter(category -> category != null && category.getId() != null)
-          .map(category -> categoryService.getCategoryById(category.getId()))
-          .toList();
-    }
-
-    Product product = productMapper.toEntity(request);
-    product.setId(id); // Ensure ID is set for update
-    product.setCategories(categories);
-
-    ProductDTO productDTO = productMapper.toDto(productService.saveOrUpdateProduct(product));
-    return ResponseEntity.ok(ApiResponse.success(productDTO, "Producto actualizado exitosamente"));
+    request.setId(id);
+    ProductDTO updatedProduct = productService.saveOrUpdateProduct(request);
+    return ResponseEntity.ok(ApiResponse.success(updatedProduct, "Producto actualizado exitosamente"));
   }
+
   @GetMapping
   public ResponseEntity<ApiResponse<List<ProductDTO>>> getAllProducts() {
-    List<Product> products = productService.getAllProducts();
-    List<ProductDTO> productDTOs = productMapper.toDtoList(products);
+    List<ProductDTO> productDTOs = productService.getAllProducts();
     return ResponseEntity.ok(ApiResponse.success(productDTOs, "Consulta exitosa"));
   }
 
