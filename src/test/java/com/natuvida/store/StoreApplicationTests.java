@@ -1,10 +1,10 @@
-package com.natuvida.tienda_natuvida_backend;
+package com.natuvida.store;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TiendaNatuvidaBackendApplicationTests {
+class StoreApplicationTests {
 
 	@Test
 	void contextLoads() {

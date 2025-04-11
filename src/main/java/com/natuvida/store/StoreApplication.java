@@ -1,13 +1,13 @@
-package com.natuvida.tienda_natuvida_backend;
+package com.natuvida.store;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TiendaNatuvidaBackendApplication {
+public class StoreApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TiendaNatuvidaBackendApplication.class, args);
+		SpringApplication.run(StoreApplication.class, args);
 	}
 
 }
