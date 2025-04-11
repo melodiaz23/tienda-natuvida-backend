@@ -11,12 +11,16 @@ import java.util.UUID;
 @Setter
 public class UserDTO {
   private UUID id;
+  private String name;
+  private String lastName;
   private String email;
-  private String username;
+  private String phone;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private Role role;
   private boolean enabled;
+  private String address;
+  private String city;
   private boolean customer;
 
 }

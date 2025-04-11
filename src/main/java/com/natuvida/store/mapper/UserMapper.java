@@ -1,5 +1,6 @@
 package com.natuvida.store.mapper;
 
+import com.natuvida.store.dto.request.UserProfileRequestDTO;
 import com.natuvida.store.dto.request.UserRequestDTO;
 import com.natuvida.store.dto.response.UserDTO;
 import com.natuvida.store.entity.User;
@@ -14,6 +15,8 @@ public interface UserMapper {
 
   @Mapping(target = "customer", expression = "java(entity.isCustomer())")
   @Mapping(target = "role", source = "role")
+  @Mapping(target = "address", source = "address") // Añadir mapeo para dirección
+  @Mapping(target = "city", source = "city")
   UserDTO toDto(User entity);
 
   // Creating new users
@@ -42,6 +45,7 @@ public interface UserMapper {
   User toEntity(UserRequestDTO requestDTO);
 
   // Update existing user
+  // Update user from profile request DTO
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "password", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
@@ -51,7 +55,10 @@ public interface UserMapper {
   @Mapping(target = "accountNonExpired", ignore = true)
   @Mapping(target = "accountNonLocked", ignore = true)
   @Mapping(target = "credentialsNonExpired", ignore = true)
-  void updateUserFromDto(UserDTO dto, @MappingTarget User user);
+//  @Mapping(target = "address", source = "address") // Añadir mapeo para dirección
+//  @Mapping(target = "city", source = "city")
+//  @Mapping(target = "phone", source = "phone")
+  void updateUserFromProfileDto(UserProfileRequestDTO profileDto, @MappingTarget User user);
 
   List<UserDTO> toDtoList(List<User> users);
 }

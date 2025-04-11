@@ -49,39 +49,7 @@ public class Cart {
   @Enumerated(EnumType.STRING)
   private CartStatus status = CartStatus.ACTIVE;
 
-  public void addItem(CartItem item) {
-    items.add(item);
-    item.setCart(this);
-    recalculateTotal();
-  }
-
-  public void removeItem(CartItem item) {
-    items.remove(item);
-    item.setCart(null);
-    recalculateTotal();
-  }
-
-  public void recalculateTotal(){
-    this.totalPrice = items.stream()
-        .map(CartItem::getSubtotal)
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
-  }
-
-  public CartItem findItemByProductId(UUID productId) {
-    if (productId == null) {
-      return null;
-    }
-    return items.stream()
-        .filter(i -> productId.equals(i.getProduct().getId())).findFirst().orElse(null);
-
-  }
-
-  public void clearItems() {
-    items.forEach(item -> item.setCart(null));
-    items.clear();
-    totalPrice = BigDecimal.ZERO;
-  }
-
-
+  @Column(nullable = false)
+  private Boolean enabled = true;
 
 }

@@ -34,5 +34,6 @@ public interface CustomerMapper {
 
   List<CustomerDTO> toDtoList(List<Customer> customers);
 
+  List<Customer> toEntityList(List<CustomerRequestDTO> customerRequestDTOs);
 
 }

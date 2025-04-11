@@ -106,21 +106,21 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, ApiPaths.CATEGORIES + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, ApiPaths.CATEGORIES + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.DELETE, ApiPaths.CATEGORIES + "/**").hasRole("ADMIN")
-
             // Admin-only access to customer management
             .requestMatchers(HttpMethod.GET, ApiPaths.CUSTOMERS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.POST, ApiPaths.CUSTOMERS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, ApiPaths.CUSTOMERS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.DELETE, ApiPaths.CUSTOMERS + "/**").hasRole("ADMIN")
-
             // Admin can access all order operations
             .requestMatchers(HttpMethod.GET, ApiPaths.ORDERS).hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, ApiPaths.ORDERS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.DELETE, ApiPaths.ORDERS + "/**").hasRole("ADMIN")
-
             // Users can create orders and view specific orders (their own)
             .requestMatchers(HttpMethod.POST, ApiPaths.ORDERS).authenticated()
             .requestMatchers(HttpMethod.GET, ApiPaths.ORDERS + "/**").authenticated()
+            // Users can access and update their own profile
+            .requestMatchers(HttpMethod.GET, ApiPaths.USERS + "/me").authenticated()
+            .requestMatchers(HttpMethod.PUT, ApiPaths.USERS + "/me").authenticated()
 
             // All other endpoints require admin permission
             .anyRequest().hasRole("ADMIN")

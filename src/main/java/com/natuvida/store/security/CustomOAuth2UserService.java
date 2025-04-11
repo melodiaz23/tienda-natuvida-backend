@@ -1,8 +1,11 @@
 package com.natuvida.store.security;
 
+import com.natuvida.store.dto.request.UserRequestDTO;
 import com.natuvida.store.entity.User;
 import com.natuvida.store.enums.Role;
+import com.natuvida.store.mapper.UserMapper;
 import com.natuvida.store.repository.UserRepository;
+import com.natuvida.store.service.UserService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -20,7 +23,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
   private final UserRepository userRepository;
   private final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
 
-  public CustomOAuth2UserService(UserRepository userRepository) {
+  public CustomOAuth2UserService(UserRepository userRepository, UserMapper userMapper) {
     this.userRepository = userRepository;
   }
 
@@ -32,10 +35,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     Map<String, Object> attributes = oAuth2User.getAttributes();
     String email = (String) attributes.get("email");
     String name = (String) attributes.get("name");
+    String lastName = (String) attributes.get("lastName");
 
     // Find or create user in our database
     User user = userRepository.findByEmail(email)
-        .orElseGet(() -> createNewUser(email, name));
+        .orElseGet(() -> createNewUser(email, name, lastName));
 
     // Get user authority/role
     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -51,15 +55,14 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     );
   }
 
-  private User createNewUser(String email, String name) {
-    User newUser = new User();
-    newUser.setEmail(email);
-    newUser.setUsername(email); // Using email as username
-    newUser.setEnabled(true);
+  private User createNewUser(String email, String name, String lastName) {
+    User user = new User();
+    user.setEmail(email);
+    user.setName(name);
+    user.setLastName(lastName);
+    user.setRole(Role.USER); // Set default role
+    user.setEnabled(true);
 
-    // Set default role
-    newUser.setRole(Role.USER);
-
-    return userRepository.save(newUser);
+    return userRepository.save(user);
   }
 }

@@ -31,8 +31,7 @@ public class CategoryController {
 
   @GetMapping
   public ResponseEntity<ApiResponse<List<CategoryDTO>>> getAllCategories(){
-    List<Category> categories = categoryService.getAllCategories();
-    List<CategoryDTO> categoryDTOs = categoryMapper.toDtoList(categories);
+    List<CategoryDTO> categoryDTOs = categoryService.getAllCategories();
     return ResponseEntity.ok(ApiResponse.success(categoryDTOs, "Consulta exitosa"));
   }
 

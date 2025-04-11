@@ -26,10 +26,15 @@ public class User implements UserDetails {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
+  private String name;
+
+  private String lastName;
+
+  private String phone;
+
   @Column(unique = true, nullable = false)
   private String email;
 
-  private String username;
 
   @Column(name = "created_at")
   @CreatedDate //  Automatically sets the field when the entity is first saved
@@ -46,6 +51,13 @@ public class User implements UserDetails {
 
   @Column(nullable = false)
   private Boolean enabled = true;
+
+  private String address;
+
+  private String city;
+
+  // Optional: indicate if address has been provided
+  private Boolean hasAddressInfo = false;
 
   // A User may or may not have a Customer profile
   //  Deleting a User will NOT delete the associated Customer.
@@ -64,6 +76,11 @@ public class User implements UserDetails {
       authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
     return authorities;
+  }
+
+  @Override
+  public String getUsername() {
+    return email;
   }
 
   @Override

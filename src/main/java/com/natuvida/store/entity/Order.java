@@ -56,6 +56,9 @@ public class Order {
   @Column
   private String notes;
 
+  @Column(nullable = false)
+  private Boolean enabled = true;
+
   // Helper methods.
   public void addOrderItem(OrderItem item){
     orderItems.add(item);
