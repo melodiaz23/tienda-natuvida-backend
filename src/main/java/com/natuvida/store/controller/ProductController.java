@@ -1,42 +1,35 @@
 package com.natuvida.store.controller;
 
 import com.natuvida.store.api.response.ApiResponse;
-import com.natuvida.store.dto.response.CategoryDTO;
 import com.natuvida.store.dto.response.ProductDTO;
 import com.natuvida.store.dto.request.ProductRequestDTO;
-import com.natuvida.store.entity.Category;
-import com.natuvida.store.entity.Product;
-import com.natuvida.store.mapper.ProductMapper;
-import com.natuvida.store.service.CategoryService;
 import com.natuvida.store.service.ProductService;
 import com.natuvida.store.util.ApiPaths;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping(ApiPaths.PRODUCTS)
 public class ProductController {
 
-  private ProductService productService;
-  private CategoryService categoryService;
-  private ProductMapper productMapper;
+  private final ProductService productService;
 
   @PostMapping
   public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@RequestBody ProductRequestDTO request) {
-    ProductDTO newProduct = productService.saveOrUpdateProduct(request);
-    return ResponseEntity.ok(ApiResponse.success(newProduct, "Producto creado exitosamente"));
+    ProductDTO newProduct = productService.createProduct(request);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(ApiResponse.success(newProduct, "Producto creado exitosamente"));
   }
-
 
   @PutMapping("/{id}")
   public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
-    request.setId(id);
-    ProductDTO updatedProduct = productService.saveOrUpdateProduct(request);
+    ProductDTO updatedProduct = productService.updateProduct(id, request);
     return ResponseEntity.ok(ApiResponse.success(updatedProduct, "Producto actualizado exitosamente"));
   }
 
@@ -48,9 +41,20 @@ public class ProductController {
 
   @GetMapping("/{id}")
   public ResponseEntity<ApiResponse<ProductDTO>> getProductById(@PathVariable UUID id) {
-    Product product = productService.getProductById(id);
-    ProductDTO productDTO = productMapper.toDto(product);
-    return ResponseEntity.ok(ApiResponse.success(productDTO, "Consulta exitosa."));
+    ProductDTO productDTO = productService.getProductById(id);
+    return ResponseEntity.ok(ApiResponse.success(productDTO, "Consulta exitosa"));
+  }
+
+  @GetMapping("/{slug}")
+  public ResponseEntity<ApiResponse<ProductDTO>> getProductBySlug(@PathVariable String slug) {
+    ProductDTO productDTO = productService.getProductBySlug(slug);
+    return ResponseEntity.ok(ApiResponse.success(productDTO, "Consulta exitosa"));
+  }
+
+  @GetMapping("/category/{categoryId}")
+  public ResponseEntity<ApiResponse<List<ProductDTO>>> getProductsByCategory(@PathVariable UUID categoryId) {
+    List<ProductDTO> productDTOs = productService.getProductsByCategory(categoryId);
+    return ResponseEntity.ok(ApiResponse.success(productDTOs, "Consulta exitosa"));
   }
 
   @DeleteMapping("/{id}")

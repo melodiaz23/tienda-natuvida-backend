@@ -22,9 +22,9 @@ public class ProductDTO {
   private List<String> benefits;
   private List<String> tags;
   private String usageMode;
-  private PriceDTO price;
-  private List<CategoryDTO> categories;
-  private List<ProductImageDTO> images;
+  private PriceResponseDTO price;
+  private List<CategoryResponseDTO> categories;
+  private List<ProductImageResponseDTO> images;
   private boolean enabled;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
@@ -34,9 +34,9 @@ public class ProductDTO {
       return null;
     }
     return images.stream()
-        .filter(ProductImageDTO::isPrimary)
+        .filter(ProductImageResponseDTO::isPrimary)
         .findFirst()
-        .map(ProductImageDTO::getImageUrl)
+        .map(ProductImageResponseDTO::getImageUrl)
         .orElse(images.get(0).getImageUrl());
   }
 }
