@@ -1,7 +1,7 @@
 package com.natuvida.store.mapper;
 
 import com.natuvida.store.dto.request.CustomerRequestDTO;
-import com.natuvida.store.dto.response.CustomerDTO;
+import com.natuvida.store.dto.response.CustomerResponseDTO;
 import com.natuvida.store.entity.Customer;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,7 +14,7 @@ public interface CustomerMapper {
 
   @Mapping(target = "userId", source = "user.id")
   @Mapping(target = "userEmail", source = "user.email")
-  CustomerDTO toDto(Customer entity);
+  CustomerResponseDTO toDto(Customer entity);
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "user", ignore = true)
@@ -31,8 +31,7 @@ public interface CustomerMapper {
   @Mapping(target = "updatedAt", ignore = true)
   void updateCustomerFromDTO(CustomerRequestDTO requestDTO, @MappingTarget Customer customer);
 
-
-  List<CustomerDTO> toDtoList(List<Customer> customers);
+  List<CustomerResponseDTO> toDtoList(List<Customer> customers);
 
   List<Customer> toEntityList(List<CustomerRequestDTO> customerRequestDTOs);
 

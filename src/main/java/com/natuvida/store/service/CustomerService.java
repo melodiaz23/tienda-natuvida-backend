@@ -1,7 +1,7 @@
 package com.natuvida.store.service;
 
-import com.natuvida.store.dto.response.CustomerDTO;
-import com.natuvida.store.dto.response.UserDTO;
+import com.natuvida.store.dto.response.CustomerResponseDTO;
+import com.natuvida.store.dto.response.UserResponseDTO;
 import com.natuvida.store.entity.Customer;
 import com.natuvida.store.mapper.CustomerMapper;
 import com.natuvida.store.mapper.UserMapper;
@@ -36,12 +36,12 @@ public class CustomerService {
   }
 
   @Transactional
-  public CustomerDTO createCustomer(String email, String firstName, String lastName, String phoneNumber, String nationalId, String address, String city) {
+  public CustomerResponseDTO createCustomer(String email, String firstName, String lastName, String phoneNumber, String nationalId, String address, String city) {
     Customer customer = new Customer();
     // Si se proporciona un userId, intentamos asociar el usuario
     // Si se proporciona un email, intentamos asociar el usuario
     if (email != null) {
-      UserDTO user = userService.findByEmail(email);
+      UserResponseDTO user = userService.findByEmail(email);
       if (user != null) {
         // Asociamos el usuario al customer
         customer.setUser(userMapper.toEntity(user));
