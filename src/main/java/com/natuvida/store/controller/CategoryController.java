@@ -1,7 +1,7 @@
 package com.natuvida.store.controller;
 
 import com.natuvida.store.api.response.ApiResponse;
-import com.natuvida.store.dto.response.CategoryDTO;
+import com.natuvida.store.dto.response.CategoryResponseDTO;
 import com.natuvida.store.dto.request.CategoryRequestDTO;
 import com.natuvida.store.entity.Category;
 import com.natuvida.store.mapper.CategoryMapper;
@@ -23,30 +23,30 @@ public class CategoryController {
   private final CategoryMapper categoryMapper;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<CategoryDTO>> createCategory(@RequestBody CategoryRequestDTO request){
+  public ResponseEntity<ApiResponse<CategoryResponseDTO>> createCategory(@RequestBody CategoryRequestDTO request){
     Category category = categoryService.saveOrUpdateCategory(null, request.getName(), request.getDescription());
-    CategoryDTO categoryDTO = categoryMapper.toDto(category);
-    return ResponseEntity.ok(ApiResponse.success(categoryDTO, "Categoría creada exitosamente"));
+    CategoryResponseDTO categoryResponseDTO = categoryMapper.toDto(category);
+    return ResponseEntity.ok(ApiResponse.success(categoryResponseDTO, "Categoría creada exitosamente"));
   }
 
   @GetMapping
-  public ResponseEntity<ApiResponse<List<CategoryDTO>>> getAllCategories(){
-    List<CategoryDTO> categoryDTOs = categoryService.getAllCategories();
-    return ResponseEntity.ok(ApiResponse.success(categoryDTOs, "Consulta exitosa"));
+  public ResponseEntity<ApiResponse<List<CategoryResponseDTO>>> getAllCategories(){
+    List<CategoryResponseDTO> categoryResponseDTOS = categoryService.getAllCategories();
+    return ResponseEntity.ok(ApiResponse.success(categoryResponseDTOS, "Consulta exitosa"));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ApiResponse<CategoryDTO>> getCategoryById(@PathVariable UUID id){
+  public ResponseEntity<ApiResponse<CategoryResponseDTO>> getCategoryById(@PathVariable UUID id){
     Category category = categoryService.getCategoryById(id);
-    CategoryDTO categoryDTO = categoryMapper.toDto(category);
-    return ResponseEntity.ok(ApiResponse.success(categoryDTO, "Consulta exitosa"));
+    CategoryResponseDTO categoryResponseDTO = categoryMapper.toDto(category);
+    return ResponseEntity.ok(ApiResponse.success(categoryResponseDTO, "Consulta exitosa"));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<CategoryDTO>> updateCategory(@PathVariable UUID id, @Valid @RequestBody CategoryRequestDTO request) {
+  public ResponseEntity<ApiResponse<CategoryResponseDTO>> updateCategory(@PathVariable UUID id, @Valid @RequestBody CategoryRequestDTO request) {
   Category category = categoryService.saveOrUpdateCategory(id, request.getName(), request.getDescription());
-  CategoryDTO categoryDTO = categoryMapper.toDto(category);
-  return ResponseEntity.ok(ApiResponse.success(categoryDTO, "Categoría Actualizada exitosamente"));
+  CategoryResponseDTO categoryResponseDTO = categoryMapper.toDto(category);
+  return ResponseEntity.ok(ApiResponse.success(categoryResponseDTO, "Categoría Actualizada exitosamente"));
   }
 
   @DeleteMapping("/{id}")
