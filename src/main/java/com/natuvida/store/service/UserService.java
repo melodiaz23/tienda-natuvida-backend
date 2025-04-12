@@ -2,7 +2,7 @@ package com.natuvida.store.service;
 
 import com.natuvida.store.dto.request.UserProfileRequestDTO;
 import com.natuvida.store.dto.request.UserRequestDTO;
-import com.natuvida.store.dto.response.UserDTO;
+import com.natuvida.store.dto.response.UserResponseDTO;
 import com.natuvida.store.entity.User;
 import com.natuvida.store.enums.Role;
 import com.natuvida.store.mapper.UserMapper;
@@ -23,7 +23,7 @@ public class UserService {
   private final UserMapper userMapper;
 
   @Transactional
-  public UserDTO registerUser(UserRequestDTO requestDTO) {
+  public UserResponseDTO registerUser(UserRequestDTO requestDTO) {
     User user = new User();
     user.setEmail(requestDTO.getEmail());
     user.setName(requestDTO.getName());
@@ -38,7 +38,7 @@ public class UserService {
   }
 
   @Transactional
-  public UserDTO updateUser(UUID userId, UserProfileRequestDTO profileDTO) {
+  public UserResponseDTO updateUser(UUID userId, UserProfileRequestDTO profileDTO) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -90,7 +90,7 @@ public class UserService {
   }
 
   @Transactional(readOnly = true)
-  public UserDTO findByEmail(String email){
+  public UserResponseDTO findByEmail(String email){
     Optional<User> userOp = userRepository.findByEmail(email);
     User user = null;
     if (userOp.isPresent()) user = userOp.get(); 

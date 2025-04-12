@@ -2,11 +2,10 @@ package com.natuvida.store.controller;
 
 import com.natuvida.store.api.response.ApiResponse;
 import com.natuvida.store.dto.request.UserProfileRequestDTO;
-import com.natuvida.store.dto.response.UserDTO;
+import com.natuvida.store.dto.response.UserResponseDTO;
 import com.natuvida.store.service.UserService;
 import com.natuvida.store.util.ApiPaths;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,7 +43,7 @@ public class UserController {
   }
 
   @PutMapping("/me")
-  public ResponseEntity<ApiResponse<UserDTO>> updateUserProfile(@RequestBody UserProfileRequestDTO profileData) {
+  public ResponseEntity<ApiResponse<UserResponseDTO>> updateUserProfile(@RequestBody UserProfileRequestDTO profileData) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
       UUID userId = userService.getUserIdByEmail(username);
