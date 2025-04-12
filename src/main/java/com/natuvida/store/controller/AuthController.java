@@ -5,7 +5,7 @@ import com.natuvida.store.dto.request.RefreshTokenRequestDTO;
 import com.natuvida.store.dto.request.UserLoginRequestDTO;
 import com.natuvida.store.dto.request.UserRequestDTO;
 import com.natuvida.store.dto.response.AuthResponseDTO;
-import com.natuvida.store.dto.response.UserDTO;
+import com.natuvida.store.dto.response.UserResponseDTO;
 import com.natuvida.store.entity.User;
 import com.natuvida.store.enums.Role;
 import com.natuvida.store.mapper.UserMapper;
@@ -61,8 +61,8 @@ public class AuthController {
     String refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
 
     String redirectUrl = determineRedirectUrl(userDetails.getRole());
-    UserDTO userDTO = userMapper.toDto(userDetails);
-    AuthResponseDTO authResponse = new AuthResponseDTO(jwt, refreshToken, userDTO, redirectUrl);
+    UserResponseDTO userResponseDTO = userMapper.toDto(userDetails);
+    AuthResponseDTO authResponse = new AuthResponseDTO(jwt, refreshToken, userResponseDTO, redirectUrl);
     return ResponseEntity.ok(ApiResponse.success(authResponse, "Login successful"));
   }
 
@@ -75,7 +75,7 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<ApiResponse<UserDTO>> registerUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+  public ResponseEntity<ApiResponse<UserResponseDTO>> registerUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
     boolean userExists = userRepository.existsByEmail(userRequestDTO.getEmail());
     // Ejecutamos la codificación de contraseña para evitar timing attacks
     passwordEncoder.encode(userRequestDTO.getPassword());
@@ -84,8 +84,7 @@ public class AuthController {
           ApiResponse.success(null, "Si el email no está registrado, se enviará un correo de verificación")
       );
     }
-    System.out.println("Contraseña recibida: " + userRequestDTO.getPassword()); // Verifica que la contraseña no sea null
-    UserDTO registeredUser = userService.registerUser(userRequestDTO);
+    UserResponseDTO registeredUser = userService.registerUser(userRequestDTO);
     return ResponseEntity.ok(
         ApiResponse.success(registeredUser, "Si el email no está registrado, se enviará un correo de verificación")
     );
@@ -151,7 +150,7 @@ public class AuthController {
 
       // Create user DTO
       User user = (User) userDetails;
-      UserDTO userDTO = userMapper.toDto(user);
+      UserResponseDTO userResponseDTO = userMapper.toDto(user);
 
       // Determine redirect URL
       String redirectUrl = determineRedirectUrl(user.getRole());
@@ -160,7 +159,7 @@ public class AuthController {
       AuthResponseDTO authResponse = new AuthResponseDTO(
           newAccessToken,
           newRefreshToken,
-          userDTO,
+          userResponseDTO,
           redirectUrl
       );
 
