@@ -49,27 +49,74 @@ public class CartService {
   }
 
   @Transactional
-  public CartResponseDTO createCart(CartRequestDTO cartRequestDTO) {
-    Cart cart = new Cart();
+  public CartResponseDTO syncCartFromLocalStorage(UUID userId, List<CartItemRequestDTO> localCartItems) {
+    // Buscar si el usuario ya tiene un carrito activo
+    Optional<Cart> existingCartOpt = cartRepository.findByUserIdAndStatusAndEnabled(userId, CartStatus.ACTIVE, true);
 
-    if (cartRequestDTO.getUserId() != null) {
-      User user = userRepository.findById(cartRequestDTO.getUserId())
-          .orElseThrow(() -> new ValidationException("Usuario no encontrado"));
-      cart.setUser(user);
+    Cart cart;
+    if (existingCartOpt.isPresent()) {
+      cart = existingCartOpt.get();
     } else {
-      throw new ValidationException("Se debe proporcionar un userId o sessionId");
+      // Crear un nuevo carrito para el usuario
+      User user = userRepository.findById(userId)
+          .orElseThrow(() -> new ValidationException("Usuario no encontrado"));
+      cart = new Cart();
+      cart.setUser(user);
+      cart.setStatus(CartStatus.ACTIVE);
+      cart.setEnabled(true);
     }
+
+    // Fusionar los productos del localStorage con el carrito existente
+    for (CartItemRequestDTO localItem : localCartItems) {
+      Product product = productRepository.findById(localItem.getProductId())
+          .orElseThrow(() -> new ValidationException("Producto no encontrado: " + localItem.getProductId()));
+
+      // Verificar si el producto ya está en el carrito
+      Optional<CartItem> existingItemOpt = cart.getItems().stream()
+          .filter(item -> item.getProduct().getId().equals(localItem.getProductId()))
+          .findFirst();
+
+      if (existingItemOpt.isPresent()) {
+        // Actualizar la cantidad del item existente
+        CartItem existingItem = existingItemOpt.get();
+        existingItem.setQuantity(localItem.getQuantity());
+        existingItem.setSubtotal(calculateSubtotal(product, localItem.getQuantity()));
+      } else {
+        // Agregar nuevo item
+        CartItem newItem = new CartItem();
+        newItem.setCart(cart);
+        newItem.setProduct(product);
+        newItem.setQuantity(localItem.getQuantity());
+        newItem.setUnitPrice(product.getPrice().getUnit());
+        newItem.setSubtotal(calculateSubtotal(product, localItem.getQuantity()));
+        cart.getItems().add(newItem);
+      }
+    }
+    // Actualizar el total del carrito
+    updateCartTotal(cart);
+    cartRepository.save(cart);
+    return cartMapper.toDto(cart);
+  }
+
+  @Transactional
+  public CartResponseDTO createCart(UUID userId) {
+    // Verificar si el usuario ya tiene un carrito activo
+    Optional<Cart> existingCart = cartRepository.findByUserIdAndStatusAndEnabled(userId, CartStatus.ACTIVE, true);
+    if (existingCart.isPresent()) {
+      return cartMapper.toDto(existingCart.get());
+    }
+    // Crear un nuevo carrito para el usuario
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ValidationException("Usuario no encontrado"));
+
+    Cart cart = new Cart();
+    cart.setUser(user);
     cart.setStatus(CartStatus.ACTIVE);
     cart.setEnabled(true);
 
-    Cart savedCart = cartRepository.save(cart);
-
-    if (cartRequestDTO.getItems() != null && !cartRequestDTO.getItems().isEmpty()) {
-      addItemsToCart(savedCart, cartRequestDTO.getItems());
-    }
-
-    return cartMapper.toDto(savedCart);
+    return cartMapper.toDto(cartRepository.save(cart));
   }
+
 
   @Transactional
   public CartResponseDTO addItemToCart(UUID cartId, CartItemRequestDTO itemRequest) {
@@ -193,38 +240,79 @@ public class CartService {
     cart.setTotalPrice(total);
   }
 
+
   public BigDecimal calculateSubtotal(Product product, int quantity) {
     Price pricing = product.getPrice();
     if (pricing == null) {
       throw new ValidationException("Product price not found");
     }
-
-    BigDecimal subtotal;
-    switch (quantity) {
-      case 1 -> subtotal = pricing.getUnit();
-      case 2 -> subtotal = pricing.getTwoUnits() != null ?
-          pricing.getTwoUnits() : pricing.getUnit().multiply(BigDecimal.valueOf(2));
-      case 3 -> subtotal = pricing.getThreeUnits() != null ?
-          pricing.getThreeUnits() : pricing.getUnit().multiply(BigDecimal.valueOf(3));
-      default -> {
-        // For quantities > 3, calculate based on promotions if available
-        int sets = quantity / 3;
-        int remainder = quantity % 3;
-        subtotal = calculateMultiSetPrice(pricing, sets, remainder);
-      }
-    }
-    return subtotal;
+    // Casos base para cantidades pequeñas
+    if (quantity == 1) return pricing.getUnit();
+    if (quantity == 2) return pricing.getTwoUnits() != null ?
+        pricing.getTwoUnits() :
+        pricing.getUnit().multiply(BigDecimal.valueOf(2));
+    if (quantity == 3) return pricing.getThreeUnits() != null ?
+        pricing.getThreeUnits() :
+        pricing.getUnit().multiply(BigDecimal.valueOf(3));
+    // Para cantidades mayores, aplicamos la lógica de promociones
+    // TODO: Validar lógica de promociones
+    return calculateComplexPrice(pricing, quantity);
   }
 
-  // TODO: Validar lógica de precios
-  private BigDecimal calculateMultiSetPrice(Price pricing, int sets, int remainder) {
-    BigDecimal basePrice = pricing.getThreeUnits() != null ?
-        pricing.getThreeUnits().multiply(BigDecimal.valueOf(sets)) :
-        pricing.getUnit().multiply(BigDecimal.valueOf(sets * 3));
+  private BigDecimal calculateComplexPrice(Price pricing, int quantity) {
+    BigDecimal total = BigDecimal.ZERO;
 
-    if (remainder == 0) return basePrice;
-    if (remainder == 1) return basePrice.add(pricing.getUnit());
-    return basePrice.add(pricing.getTwoUnits() != null ?
-        pricing.getTwoUnits() : pricing.getUnit().multiply(BigDecimal.valueOf(2)));
+    // Promoción: pague 3 lleve 5
+    if (pricing.getFiveByThree() != null && quantity >= 5) {
+      int promotionSets = quantity / 5;  // Cuántos sets completos de 5
+      int remainder = quantity % 5;      // Unidades restantes
+
+      // Aplicar el precio de la promoción por cada set completo de 5
+      total = total.add(pricing.getFiveByThree().multiply(BigDecimal.valueOf(promotionSets)));
+
+      // Si quedan unidades, calcular su precio
+      if (remainder > 0) {
+        if (remainder == 1) {
+          total = total.add(pricing.getUnit());
+        } else if (remainder == 2) {
+          total = total.add(pricing.getTwoUnits() != null ?
+              pricing.getTwoUnits() :
+              pricing.getUnit().multiply(BigDecimal.valueOf(2)));
+        } else if (remainder == 3) {
+          total = total.add(pricing.getThreeUnits() != null ?
+              pricing.getThreeUnits() :
+              pricing.getUnit().multiply(BigDecimal.valueOf(3)));
+        } else { // remainder == 4
+          // Para 4 unidades restantes, usamos el precio de 3 + precio de 1
+          BigDecimal price3 = pricing.getThreeUnits() != null ?
+              pricing.getThreeUnits() :
+              pricing.getUnit().multiply(BigDecimal.valueOf(3));
+          total = total.add(price3).add(pricing.getUnit());
+        }
+      }
+    }
+    // Si no hay promoción de 5x3 o la cantidad es menor que 5
+    else {
+      // Calcular usando múltiplos de 3 y el resto
+      int sets = quantity / 3;
+      int remainder = quantity % 3;
+
+      // Precio para los sets completos de 3
+      BigDecimal price3 = pricing.getThreeUnits() != null ?
+          pricing.getThreeUnits() :
+          pricing.getUnit().multiply(BigDecimal.valueOf(3));
+      total = total.add(price3.multiply(BigDecimal.valueOf(sets)));
+
+      // Agregar precio por los items adicionales
+      if (remainder == 1) {
+        total = total.add(pricing.getUnit());
+      } else if (remainder == 2) {
+        total = total.add(pricing.getTwoUnits() != null ?
+            pricing.getTwoUnits() :
+            pricing.getUnit().multiply(BigDecimal.valueOf(2)));
+      }
+    }
+
+    return total;
   }
 }
