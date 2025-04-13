@@ -10,6 +10,6 @@ import lombok.Setter;
 public class AuthResponseDTO {
   private String token;
   private String refreshToken;
-  private UserDTO user;
+  private UserResponseDTO user;
   private String redirectUrl;
 }

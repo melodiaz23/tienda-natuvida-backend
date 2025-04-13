@@ -1,12 +1,11 @@
 package com.natuvida.store.service;
 
-import com.natuvida.store.dto.response.CategoryDTO;
+import com.natuvida.store.dto.response.CategoryResponseDTO;
 import com.natuvida.store.entity.Category;
 import com.natuvida.store.exception.ValidationException;
 import com.natuvida.store.mapper.CategoryMapper;
 import com.natuvida.store.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,7 @@ public class CategoryService {
   private final CategoryMapper categoryMapper;
 
   @Transactional(readOnly = true)
-  public List<CategoryDTO> getAllCategories(){
+  public List<CategoryResponseDTO> getAllCategories(){
     return categoryMapper.toDtoList(categoryRepository.findAll());
   }
 

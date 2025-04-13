@@ -1,4 +1,5 @@
 package com.natuvida.store.service;
+
 import com.natuvida.store.dto.request.ProductRequestDTO;
 import com.natuvida.store.dto.response.ProductDTO;
 import com.natuvida.store.entity.Category;
@@ -26,71 +27,49 @@ public class ProductService {
   private final ProductMapper productMapper;
 
   @Transactional(readOnly = true)
-  public List<ProductDTO> getAllProducts(){
+  public List<ProductDTO> getAllProducts() {
     return productMapper.toDtoList(productRepository.findAll());
   }
 
   @Transactional(readOnly = true)
-  public List<ProductDTO> getProductsByCategory(UUID categoryId){
+  public List<ProductDTO> getProductsByCategory(UUID categoryId) {
     return productMapper.toDtoList(productRepository.findByCategoriesId(categoryId));
   }
 
   @Transactional(readOnly = true)
-  public Product getProductById(UUID id) {
-    return productRepository.findById(id).orElseThrow(()-> new ValidationException("Producto no encontrado"));
+  public ProductDTO getProductById(UUID id) {
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new ValidationException("Producto no encontrado"));
+    return productMapper.toDto(product);
+  }
+
+  @Transactional(readOnly = true)
+  public ProductDTO getProductBySlug(String slug) {
+    Product product = productRepository.findBySlug(slug)
+        .orElseThrow(() -> new ValidationException("Producto no encontrado"));
+    return productMapper.toDto(product);
   }
 
   @Transactional
-  public ProductDTO saveOrUpdateProduct(ProductRequestDTO productRequest) {
-    Product product;
-    if (productRequest.getId() == null) {
-      product = new Product(productRequest.getName());
-    } else {
-      product = productRepository.findById(productRequest.getId())
-          .orElseThrow(() -> new ValidationException("Producto no encontrado"));
-      product.setName(productRequest.getName());
+  public ProductDTO createProduct(ProductRequestDTO productRequest) {
+    if (productRequest.getId() != null) {
+      throw new ValidationException("Para crear un producto, el ID debe ser nulo");
     }
-
-    if (productRequest.getCustomName() != null && !productRequest.getCustomName().trim().isEmpty()) {
-      product.setSlug(generateSlug(productRequest.getCustomName(), productRequest.getId()));
-    } else if (product.getSlug() == null || product.getSlug().isEmpty()) {
-      product.setSlug(generateSlug(productRequest.getName(), productRequest.getId()));
-    }
-
-    product.setDescription(productRequest.getDescription());
-    product.setPresentation(productRequest.getPresentation());
-    product.setIngredients(
-        updateList(product.getIngredients(), productRequest.getIngredients()));
-    product.setBenefits(
-        updateList(product.getBenefits(), productRequest.getBenefits()));
-    product.setTags(
-        updateList(product.getTags(), productRequest.getTags()));
-    product.setUsageMode(productRequest.getUsageMode());
-
-    if (productRequest.getName().isBlank()) {
-      throw new ValidationException("Nombre no puede ser vacío");
-    }
-    if (productRequest.getPrice().getUnit() == null) {
-      throw new ValidationException("El precio unitario debe contener un valor");
-    }
-
-    Price prices = priceService.setOrUpdatePrices(productRequest.getPrice());
-    product.setPrice(prices);
-
-    if (productRequest.getCategories() != null) {
-      List<Category> categoryEntities = categoryMapper.toEntityList(productRequest.getCategories());
-      product.setCategories(
-          updateList(product.getCategories(), categoryEntities));
-    }
-
-    product.setImages(
-        updateList(product.getImages(), productRequest.getImages()));
-
-    return productMapper.toDto(productRepository.save(product));
+    Product product = new Product(productRequest.getName());
+    return processAndSaveProduct(product, productRequest);
   }
 
   @Transactional
-  public void deleteProduct(UUID id){
+  public ProductDTO updateProduct(UUID id, ProductRequestDTO productRequest) {
+    Product product = productRepository.findById(id)
+        .orElseThrow(() -> new ValidationException("Producto no encontrado"));
+    product.setName(productRequest.getName());
+    return processAndSaveProduct(product, productRequest);
+  }
+
+
+  @Transactional
+  public void deleteProduct(UUID id) {
     productRepository.deleteById(id);
   }
 
@@ -119,11 +98,7 @@ public class ProductService {
     return slug;
   }
 
-
-
-
-
-  private <T> List<T> updateList(List<T> currentList, List<T> newList){
+  private <T> List<T> updateList(List<T> currentList, List<T> newList) {
     if (newList != null) {
       if (currentList == null) {
         currentList = new ArrayList<>(newList);
@@ -135,6 +110,46 @@ public class ProductService {
       currentList.clear();
     }
     return currentList;
+  }
+
+  private ProductDTO processAndSaveProduct(Product product, ProductRequestDTO productRequest) {
+    // Configurar slug
+    if (productRequest.getCustomName() != null && !productRequest.getCustomName().trim().isEmpty()) {
+      product.setSlug(generateSlug(productRequest.getCustomName(), product.getId()));
+    } else if (product.getSlug() == null || product.getSlug().isEmpty()) {
+      product.setSlug(generateSlug(productRequest.getName(), product.getId()));
+    }
+
+    // Validaciones
+    if (productRequest.getName().isBlank()) {
+      throw new ValidationException("Nombre no puede ser vacío");
+    }
+    if (productRequest.getPrice() == null || productRequest.getPrice().getUnit() == null) {
+      throw new ValidationException("El precio unitario debe contener un valor");
+    }
+
+    // Configurar propiedades del producto
+    product.setDescription(productRequest.getDescription());
+    product.setPresentation(productRequest.getPresentation());
+    product.setIngredients(updateList(product.getIngredients(), productRequest.getIngredients()));
+    product.setBenefits(updateList(product.getBenefits(), productRequest.getBenefits()));
+    product.setTags(updateList(product.getTags(), productRequest.getTags()));
+    product.setUsageMode(productRequest.getUsageMode());
+
+    // Configurar precio
+    Price prices = priceService.setOrUpdatePrices(productRequest.getPrice());
+    product.setPrice(prices);
+
+    // Configurar categorías
+    if (productRequest.getCategories() != null) {
+      List<Category> categoryEntities = categoryMapper.toEntityList(productRequest.getCategories());
+      product.setCategories(updateList(product.getCategories(), categoryEntities));
+    }
+    // Configurar imágenes
+    product.setImages(updateList(product.getImages(), productRequest.getImages()));
+
+    // Guardar y devolver DTO
+    return productMapper.toDto(productRepository.save(product));
   }
 
 }

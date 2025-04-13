@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class CustomerDTO {
+public class CustomerResponseDTO {
   private UUID id;
   private UUID userId;
   private String firstName;

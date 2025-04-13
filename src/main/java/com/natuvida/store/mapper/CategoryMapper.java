@@ -1,6 +1,6 @@
 package com.natuvida.store.mapper;
 
-import com.natuvida.store.dto.response.CategoryDTO;
+import com.natuvida.store.dto.response.CategoryResponseDTO;
 import com.natuvida.store.entity.Category;
 import org.mapstruct.Mapper;
 
@@ -10,13 +10,13 @@ import java.util.List;
 public interface CategoryMapper {
 
 
-  CategoryDTO toDto(Category entity);
+  CategoryResponseDTO toDto(Category entity);
 
-  Category toEntity(CategoryDTO dto);
+  Category toEntity(CategoryResponseDTO dto);
 
-  List<CategoryDTO> toDtoList(List<Category> entityList);
+  List<CategoryResponseDTO> toDtoList(List<Category> entityList);
 
-  List<Category> toEntityList(List<CategoryDTO> dtoList);
+  List<Category> toEntityList(List<CategoryResponseDTO> dtoList);
 
 
 }

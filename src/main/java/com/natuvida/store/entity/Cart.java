@@ -37,9 +37,6 @@ public class Cart {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @Column(name = "session_id")
-  private String sessionId; // For guest users
-
   @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<CartItem> items = new ArrayList<>();
 

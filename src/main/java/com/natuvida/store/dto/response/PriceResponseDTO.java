@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class PriceDTO {
+public class PriceResponseDTO {
   private UUID id;
   private BigDecimal unit;
   private BigDecimal twoUnits;

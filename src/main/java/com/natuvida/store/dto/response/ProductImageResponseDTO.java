@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class ProductImageDTO {
+public class ProductImageResponseDTO {
   private UUID id;
   private String imageUrl;
   private String altText;

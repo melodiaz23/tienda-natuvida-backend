@@ -2,7 +2,7 @@ package com.natuvida.store.mapper;
 
 import com.natuvida.store.dto.request.UserProfileRequestDTO;
 import com.natuvida.store.dto.request.UserRequestDTO;
-import com.natuvida.store.dto.response.UserDTO;
+import com.natuvida.store.dto.response.UserResponseDTO;
 import com.natuvida.store.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,7 +17,7 @@ public interface UserMapper {
   @Mapping(target = "role", source = "role")
   @Mapping(target = "address", source = "address") // Añadir mapeo para dirección
   @Mapping(target = "city", source = "city")
-  UserDTO toDto(User entity);
+  UserResponseDTO toDto(User entity);
 
   // Creating new users
   @Mapping(target = "password", ignore = true)
@@ -29,7 +29,7 @@ public interface UserMapper {
   @Mapping(target = "accountNonExpired", ignore = true)
   @Mapping(target = "accountNonLocked", ignore = true)
   @Mapping(target = "credentialsNonExpired", ignore = true)
-  User toEntity(UserDTO dto);
+  User toEntity(UserResponseDTO dto);
 
   // For creating new users
   @Mapping(target = "id", ignore = true)
@@ -60,5 +60,5 @@ public interface UserMapper {
 //  @Mapping(target = "phone", source = "phone")
   void updateUserFromProfileDto(UserProfileRequestDTO profileDto, @MappingTarget User user);
 
-  List<UserDTO> toDtoList(List<User> users);
+  List<UserResponseDTO> toDtoList(List<User> users);
 }
