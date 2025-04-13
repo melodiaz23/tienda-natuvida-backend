@@ -1,7 +1,7 @@
 package com.natuvida.store.config;
 
 import com.natuvida.store.security.CustomOAuth2UserService;
-import com.natuvida.store.security.CustomUserDetailsService;
+//import com.natuvida.store.security.CustomUserDetailsService;
 import com.natuvida.store.util.ApiPaths;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+//import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -37,15 +37,15 @@ import java.util.List;
 public class SecurityConfig {
 
   private final CustomOAuth2UserService customOAuth2UserService;
-  private final CustomUserDetailsService customUserDetailsService;
+//  private final CustomUserDetailsService customUserDetailsService;
 
   @Value("${app.jwt.secret}")
   private String jwtSecret;
 
 
-  public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomUserDetailsService customUserDetailsService) {
+  public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
     this.customOAuth2UserService = customOAuth2UserService;
-    this.customUserDetailsService = customUserDetailsService;
+//    this.customUserDetailsService = customUserDetailsService;
   }
 
   /**
@@ -109,6 +109,15 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, ApiPaths.CUSTOMERS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, ApiPaths.CUSTOMERS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.DELETE, ApiPaths.CUSTOMERS + "/**").hasRole("ADMIN")
+            // CART operations - solo para usuarios autenticados
+            .requestMatchers(HttpMethod.GET, ApiPaths.CART).permitAll() // Permitir GET para responder si es anónimo
+            .requestMatchers(HttpMethod.POST, ApiPaths.CART + "/sync").authenticated() // Sincronización requiere autenticación
+            .requestMatchers(HttpMethod.POST, ApiPaths.CART + "/items").authenticated()
+            .requestMatchers(HttpMethod.PUT, ApiPaths.CART + "/items/**").authenticated()
+            .requestMatchers(HttpMethod.DELETE, ApiPaths.CART + "/items/**").authenticated()
+            .requestMatchers(HttpMethod.DELETE, ApiPaths.CART + "/clear").authenticated()
+            // Solo el checkout requiere autenticación
+            .requestMatchers(HttpMethod.POST, ApiPaths.CART + "/checkout").authenticated()
             // Admin can access all order operations
             .requestMatchers(HttpMethod.GET, ApiPaths.ORDERS).hasRole("ADMIN")
             .requestMatchers(HttpMethod.PUT, ApiPaths.ORDERS + "/**").hasRole("ADMIN")
@@ -140,8 +149,9 @@ public class SecurityConfig {
             .failureUrl("/api/auth/oauth2/failure")
             // Custom user service to process OAuth2 users
             .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-        )
-        .authenticationProvider(authenticationProvider());
+        );
+//        .authenticationProvider(authenticationProvider()
+//        );
 
     return http.build();
   }
@@ -195,13 +205,13 @@ public class SecurityConfig {
     return jwtAuthenticationConverter;
   }
 
-  @Bean
-  public DaoAuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-    authProvider.setUserDetailsService(customUserDetailsService);
-    authProvider.setPasswordEncoder(passwordEncoder());
-    return authProvider;
-  }
+//  @Bean
+//  public DaoAuthenticationProvider authenticationProvider() {
+//    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+//    authProvider.setUserDetailsService(customUserDetailsService);
+//    authProvider.setPasswordEncoder(passwordEncoder());
+//    return authProvider;
+//  }
 
 //  @Bean
 //  public JwtDecoder jwtDecoder(OAuth2ResourceServerProperties properties) {
