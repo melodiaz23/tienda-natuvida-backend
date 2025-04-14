@@ -1,7 +1,7 @@
 package com.natuvida.store.exception;
 
 import com.natuvida.store.api.response.ApiResponse;
-import com.natuvida.store.dto.response.ErrorResponseDTO;
+import com.natuvida.store.exception.product.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,13 +14,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 // intercept exceptions, no try-catch need it
 @RestControllerAdvice // For manage the exceptions in a centralized way
 public class GlobalExceptionHandler {
 
+  // AUTHENTICATION EXCEPTIONS
   // Excepciones de Spring Security - User Details
   // Manejo de credenciales inválidas (contraseña incorrecta)
   @ExceptionHandler(BadCredentialsException.class)
@@ -83,5 +83,58 @@ public class GlobalExceptionHandler {
         .status(HttpStatus.BAD_REQUEST)
         .body(ApiResponse.error("Error de validación", errors));
   }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ApiResponse<Object>> handleInvalidUUID(IllegalArgumentException ex) {
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error("ID inválido: " + ex.getMessage()));
+  }
+
+  // PRODUCT EXCEPTIONS
+  @ExceptionHandler(ProductException.class)
+  public ResponseEntity<ApiResponse<Object>> handleProductNotFound(ProductException ex) {
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(ProductValidationException.class)
+  public ResponseEntity<ApiResponse<Object>> handleProductValidation(ProductValidationException ex) {
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(ProductPriceException.class)
+  public ResponseEntity<ApiResponse<Object>> handleProductPriceError(ProductPriceException ex) {
+    return ResponseEntity
+        .status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(ProductNotAvailableException.class)
+  public ResponseEntity<ApiResponse<Object>> handleProductNotAvailable(ProductNotAvailableException ex) {
+    return ResponseEntity
+        .status(HttpStatus.FORBIDDEN)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(DuplicateProductSlugException.class)
+  public ResponseEntity<ApiResponse<Object>> handleDuplicateSlug(DuplicateProductSlugException ex) {
+    return ResponseEntity
+        .status(HttpStatus.CONFLICT)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  // CART EXCEPTIONS
+
+  // ORDER EXCEPTIONS
+
+  // CUSTOMER EXCEPTIONS
+
+  // CATEGORY EXCEPTIONS
+
+  // ORDER EXCEPTIONS
 
 }
