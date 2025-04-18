@@ -1,6 +1,10 @@
 package com.natuvida.store.exception;
 
 import com.natuvida.store.api.response.ApiResponse;
+import com.natuvida.store.exception.cart.CartItemNotFoundException;
+import com.natuvida.store.exception.cart.CartNotFoundException;
+import com.natuvida.store.exception.cart.CartUpdateException;
+import com.natuvida.store.exception.cart.CartValidationException;
 import com.natuvida.store.exception.product.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -128,6 +132,34 @@ public class GlobalExceptionHandler {
   }
 
   // CART EXCEPTIONS
+  @ExceptionHandler(CartNotFoundException.class)
+
+  public ResponseEntity<ApiResponse<Object>> handleCartNotFound(CartNotFoundException ex) {
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(CartItemNotFoundException.class)
+  public ResponseEntity<ApiResponse<Object>> handleCartItemNotFound(CartItemNotFoundException ex) {
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(CartValidationException.class)
+  public ResponseEntity<ApiResponse<Object>> handleCartValidation(CartValidationException ex) {
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(CartUpdateException.class)
+  public ResponseEntity<ApiResponse<Object>> handleCartUpdate(CartUpdateException ex) {
+    return ResponseEntity
+        .status(HttpStatus.UNPROCESSABLE_ENTITY)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
 
   // ORDER EXCEPTIONS
 
