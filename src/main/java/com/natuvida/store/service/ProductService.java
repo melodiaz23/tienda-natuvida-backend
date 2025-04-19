@@ -1,6 +1,8 @@
 package com.natuvida.store.service;
 
 import com.natuvida.store.dto.request.ProductRequestDTO;
+import com.natuvida.store.dto.response.CartResponseDTO;
+import com.natuvida.store.dto.response.CategoryResponseDTO;
 import com.natuvida.store.dto.response.ProductDTO;
 import com.natuvida.store.entity.Category;
 import com.natuvida.store.entity.Price;
@@ -15,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class ProductService {
   private final PriceService priceService;
   private final CategoryMapper categoryMapper;
   private final ProductMapper productMapper;
+  private final CategoryService categoryService;
 
   @Transactional(readOnly = true)
   public List<ProductDTO> getAllProducts() {
@@ -140,12 +145,30 @@ public class ProductService {
     Price prices = priceService.setOrUpdatePrices(productRequest.getPrice());
     product.setPrice(prices);
 
-    // Configurar categorías
-    if (productRequest.getCategories() != null) {
-      List<Category> categoryEntities = categoryMapper.toEntityList(productRequest.getCategories());
-      product.setCategories(updateList(product.getCategories(), categoryEntities));
+    // --- Reemplazo para el bloque de categorías ---
+    if (productRequest.getCategories() != null && !productRequest.getCategories().isEmpty()) {
+      List<UUID> categoryIds = productRequest.getCategories().stream()
+          .filter(Objects::nonNull)
+          .distinct()
+          .collect(Collectors.toList());
+
+      List<CategoryResponseDTO> categoryDto; // Declara la lista para guardar las entidades encontradas
+
+      if (!categoryIds.isEmpty()) {
+        categoryDto = categoryService.findAllById(categoryIds);
+
+        // 4. (Opcional pero MUY recomendado) Verifica si se encontraron todas las categorías solicitadas.
+        if (categoryDto.size() != categoryIds.size()) {
+          System.out.println("ADVERTENCIA: Se solicitaron IDs de categoría que no existen.");
+        }
+      } else {
+        categoryDto = new ArrayList<>();
+      }
+      product.setCategories(categoryMapper.toEntityList(categoryDto));
+
+    } else {
+      product.setCategories(new ArrayList<>());
     }
-    // Configurar imágenes
     product.setImages(updateList(product.getImages(), productRequest.getImages()));
 
     // Guardar y devolver DTO

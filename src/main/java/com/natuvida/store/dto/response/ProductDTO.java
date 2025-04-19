@@ -16,6 +16,7 @@ import java.util.UUID;
 public class ProductDTO {
   private UUID id;
   private String name;
+  private String slug;
   private String description;
   private String presentation;
   private List<String> ingredients;

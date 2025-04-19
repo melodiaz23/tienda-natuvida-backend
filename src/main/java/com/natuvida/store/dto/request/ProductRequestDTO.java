@@ -1,6 +1,5 @@
 package com.natuvida.store.dto.request;
 
-import com.natuvida.store.dto.response.CategoryResponseDTO;
 import com.natuvida.store.entity.Price;
 import com.natuvida.store.entity.ProductImage;
 import lombok.Getter;
@@ -21,7 +20,7 @@ public class ProductRequestDTO {
   private List<String> tags;
   private String usageMode;
   private Price price;
-  private List<CategoryResponseDTO> categories;
+  private List<UUID> categories;
   private List<ProductImage> images;
   private boolean enabled;
 }
