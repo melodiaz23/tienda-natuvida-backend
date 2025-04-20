@@ -1,7 +1,6 @@
 package com.natuvida.store.service;
 
 import com.natuvida.store.dto.request.CartItemRequestDTO;
-import com.natuvida.store.dto.request.CartRequestDTO;
 import com.natuvida.store.dto.response.CartResponseDTO;
 import com.natuvida.store.entity.*;
 import com.natuvida.store.enums.CartStatus;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,7 +39,6 @@ public class CartService {
 
   @Transactional(readOnly = true)
   public CartResponseDTO findCartByUserId(UUID userId) {
-    Cart cart;
     if (userId != null) {
       Optional<Cart> userCart = cartRepository.findByUserIdAndStatusAndEnabled(userId, CartStatus.ACTIVE, true);
       if (userCart.isPresent()) {
@@ -242,7 +241,7 @@ public class CartService {
         pricing.getUnit().multiply(BigDecimal.valueOf(3));
     if (quantity == 4)
       return pricing.getThreeUnits() != null ?
-          pricing.getThreeUnits().divide(BigDecimal.valueOf(3)).multiply(BigDecimal.valueOf(4)) :
+          pricing.getThreeUnits().divide(BigDecimal.valueOf(3), 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(4)) :
           pricing.getUnit().multiply(BigDecimal.valueOf(4));
     else
       return calculateComplexPrice(product, quantity);
