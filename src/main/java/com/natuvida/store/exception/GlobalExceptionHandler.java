@@ -5,6 +5,10 @@ import com.natuvida.store.exception.cart.CartItemNotFoundException;
 import com.natuvida.store.exception.cart.CartNotFoundException;
 import com.natuvida.store.exception.cart.CartUpdateException;
 import com.natuvida.store.exception.cart.CartValidationException;
+import com.natuvida.store.exception.order.OrderNotFoundException;
+import com.natuvida.store.exception.order.OrderProcessingException;
+import com.natuvida.store.exception.order.OrderStatusException;
+import com.natuvida.store.exception.order.OrderValidationException;
 import com.natuvida.store.exception.product.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -162,11 +166,36 @@ public class GlobalExceptionHandler {
   }
 
   // ORDER EXCEPTIONS
+  @ExceptionHandler(OrderNotFoundException.class)
+  public ResponseEntity<ApiResponse<Object>> handleOrderNotFound(OrderNotFoundException ex) {
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(OrderValidationException.class)
+  public ResponseEntity<ApiResponse<Object>> handleOrderValidation(OrderValidationException ex) {
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(OrderStatusException.class)
+  public ResponseEntity<ApiResponse<Object>> handleOrderStatus(OrderStatusException ex) {
+    return ResponseEntity
+        .status(HttpStatus.CONFLICT)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(OrderProcessingException.class)
+  public ResponseEntity<ApiResponse<Object>> handleOrderProcessing(OrderProcessingException ex) {
+    return ResponseEntity
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
 
   // CUSTOMER EXCEPTIONS
 
   // CATEGORY EXCEPTIONS
-
-  // ORDER EXCEPTIONS
 
 }
