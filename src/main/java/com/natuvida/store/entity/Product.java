@@ -32,10 +32,15 @@ public class Product {
   @Column
   private String slug;
 
+  @Column
+  private String customName;
+
   @Column(length = 2000)
   private String description;
 
   private String presentation;
+
+  private String sanitaryRegistration;
 
   @ElementCollection
   @CollectionTable(name = "product_ingredients", joinColumns = @JoinColumn(name = "product_id"))
@@ -51,6 +56,16 @@ public class Product {
   @CollectionTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"))
   @Column(name = "tag")
   private List<String> tags = new ArrayList<>();
+
+  @ElementCollection
+  @CollectionTable(name = "product_bonuses", joinColumns = @JoinColumn(name = "product_id"))
+  @Column(name = "bonus")
+  private List<String> bonuses = new ArrayList<>();
+
+  @ElementCollection
+  @CollectionTable(name = "product_contraindications", joinColumns = @JoinColumn(name = "product_id"))
+  @Column(name = "contraindication")
+  private List<String> contraindications = new ArrayList<>();
 
   @Column(length = 500)
   private String usageMode;

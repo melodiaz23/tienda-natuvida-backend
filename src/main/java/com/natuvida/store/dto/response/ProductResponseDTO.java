@@ -13,15 +13,18 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDTO {
+public class ProductResponseDTO {
   private UUID id;
   private String name;
+  private String customName;
   private String slug;
   private String description;
   private String presentation;
   private List<String> ingredients;
   private List<String> benefits;
   private List<String> tags;
+  private List<String> bonuses;
+  private List<String> contraindications;
   private String usageMode;
   private PriceResponseDTO price;
   private List<CategoryResponseDTO> categories;

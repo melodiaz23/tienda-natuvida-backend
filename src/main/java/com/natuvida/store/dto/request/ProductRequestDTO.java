@@ -1,14 +1,11 @@
 package com.natuvida.store.dto.request;
 
 import com.natuvida.store.entity.Price;
-import com.natuvida.store.entity.ProductImage;
 import lombok.Getter;
-import lombok.Setter;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
-@Setter
 public class ProductRequestDTO {
   private UUID id;
   private String name;
@@ -18,9 +15,13 @@ public class ProductRequestDTO {
   private List<String> ingredients;
   private List<String> benefits;
   private List<String> tags;
+  private List<String> bonuses;
+  private List<String> contraindications;
   private String usageMode;
   private Price price;
   private List<UUID> categories;
-  private List<ProductImage> images;
+  private List<ProductImageRequestDTO> images;
   private boolean enabled;
+
+
 }
