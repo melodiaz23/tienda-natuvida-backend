@@ -5,6 +5,10 @@ import com.natuvida.store.exception.cart.CartItemNotFoundException;
 import com.natuvida.store.exception.cart.CartNotFoundException;
 import com.natuvida.store.exception.cart.CartUpdateException;
 import com.natuvida.store.exception.cart.CartValidationException;
+import com.natuvida.store.exception.category.CategoryAlreadyExistsException;
+import com.natuvida.store.exception.category.CategoryNotFoundException;
+import com.natuvida.store.exception.category.CategoryStatusException;
+import com.natuvida.store.exception.category.CategoryValidationException;
 import com.natuvida.store.exception.customer.CustomerAlreadyExistsException;
 import com.natuvida.store.exception.customer.CustomerNotFoundException;
 import com.natuvida.store.exception.customer.CustomerStatusException;
@@ -228,5 +232,32 @@ public class GlobalExceptionHandler {
   }
 
   // CATEGORY EXCEPTIONS
+  @ExceptionHandler(CategoryNotFoundException.class)
+  public ResponseEntity<ApiResponse<Object>> handleCategoryNotFound(CategoryNotFoundException ex) {
+    return ResponseEntity
+        .status(HttpStatus.NOT_FOUND)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(CategoryValidationException.class)
+  public ResponseEntity<ApiResponse<Object>> handleCategoryValidation(CategoryValidationException ex) {
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(CategoryAlreadyExistsException.class)
+  public ResponseEntity<ApiResponse<Object>> handleCategoryAlreadyExists(CategoryAlreadyExistsException ex) {
+    return ResponseEntity
+        .status(HttpStatus.CONFLICT)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
+
+  @ExceptionHandler(CategoryStatusException.class)
+  public ResponseEntity<ApiResponse<Object>> handleCategoryStatus(CategoryStatusException ex) {
+    return ResponseEntity
+        .status(HttpStatus.FORBIDDEN)
+        .body(ApiResponse.error(ex.getMessage()));
+  }
 
 }
