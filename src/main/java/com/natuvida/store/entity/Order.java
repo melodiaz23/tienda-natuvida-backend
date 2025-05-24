@@ -51,33 +51,9 @@ public class Order {
   private PaymentMethod paymentMethod;
 
   @Column
-  private String trackingNumber;
-
-  @Column
   private String notes;
 
   @Column(nullable = false)
   private Boolean enabled = true;
-
-  // Helper methods.
-  public void addOrderItem(OrderItem item){
-    orderItems.add(item);
-    item.setOrder(this);
-    // Recalculate total
-    this.calculateTotal();
-  }
-
-  public void removeOrderItem(OrderItem item) {
-    orderItems.remove(item);
-    item.setOrder(null);
-    // Recalculate total
-    this.calculateTotal();
-  }
-
-  private void calculateTotal() {
-    this.totalAmount = orderItems.stream()
-        .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
-  }
 
 }

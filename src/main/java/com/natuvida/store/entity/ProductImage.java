@@ -18,7 +18,7 @@ public class ProductImage {
   private String imageUrl;
   private String altText;
   private Integer displayOrder;
-  private boolean isPrimary = false;
+  private boolean isPrimary;
 
   @Version
   private int version;

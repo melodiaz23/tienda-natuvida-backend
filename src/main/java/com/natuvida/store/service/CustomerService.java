@@ -1,5 +1,6 @@
 package com.natuvida.store.service;
 
+import com.natuvida.store.dto.request.CustomerRequestDTO;
 import com.natuvida.store.dto.response.CustomerResponseDTO;
 import com.natuvida.store.dto.response.UserResponseDTO;
 import com.natuvida.store.entity.Customer;
@@ -9,6 +10,7 @@ import com.natuvida.store.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,35 +37,47 @@ public class CustomerService {
     return customerRepository.findByUserId(userId);
   }
 
+  @Transactional(readOnly = true)
+  public CustomerResponseDTO findCustomerByUserEmail(String email) {
+    Optional<Customer> customer = customerRepository.findByUserEmail(email);
+    return customer.map(customerMapper::toDto).orElse(null);
+  }
+
   @Transactional
-  public CustomerResponseDTO createCustomer(String email, String firstName, String lastName, String phoneNumber, String nationalId, String address, String city) {
+  public CustomerResponseDTO createCustomer(CustomerRequestDTO request, String email) {
     Customer customer = new Customer();
-    // Si se proporciona un userId, intentamos asociar el usuario
-    // Si se proporciona un email, intentamos asociar el usuario
-    if (email != null) {
+
+    // Set fields from the request DTO
+    customer.setFirstName(request.getFirstName());
+    customer.setLastName(request.getLastName());
+    customer.setPhoneNumber(request.getPhoneNumber());
+    customer.setNationalId(request.getNationalId());
+    customer.setAddress(request.getAddress());
+    customer.setCity(request.getCity());
+
+    // Try to associate with existing user if email provided
+    if (StringUtils.hasText(email)) {
       UserResponseDTO user = userService.findByEmail(email);
       if (user != null) {
-        // Asociamos el usuario al customer
-        customer.setUser(userMapper.toEntity(user));
-        // Si no se proporciona dirección, usamos la del usuario
-        if (address == null && user.getAddress() != null) {
-          customer.setAddress(user.getAddress());
-          customer.setCity(user.getCity());
+        // Verificar si el usuario ya tiene un customer asociado
+        Optional<Customer> existingCustomer = customerRepository.findByUserId(user.getId());
+        if (existingCustomer.isPresent()) {
+          // Actualizar el customer existente en lugar de crear uno nuevo
+          Customer customerToUpdate = existingCustomer.get();
+          customerMapper.updateCustomerFromDTO(request, customerToUpdate);
+          return customerMapper.toDto(customerRepository.save(customerToUpdate));
+        } else {
+          // Asociar con el usuario existente
+          customer.setUser(userMapper.toEntity(user));
+          // Only use user's address as fallback if address wasn't provided in the request
+          if (user.getAddress() != null && !StringUtils.hasText(request.getAddress())) {
+            customer.setAddress(user.getAddress());
+            customer.setCity(user.getCity());
+          }
         }
       }
     }
-    customer.setFirstName(firstName);
-    customer.setLastName(lastName);
-    customer.setPhoneNumber(phoneNumber);
-    customer.setNationalId(nationalId);
-
-    if (address != null) {
-      customer.setAddress(address);
-      customer.setCity(city);
-    }
-
-    Customer savedCustomer = customerRepository.save(customer);
-    return customerMapper.toDto(savedCustomer);
+    return customerMapper.toDto(customerRepository.save(customer));
   }
 
   @Transactional

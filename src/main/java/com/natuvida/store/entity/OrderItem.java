@@ -31,7 +31,10 @@ public class OrderItem {
   private Integer quantity;
 
   @Column(nullable = false, precision = 12, scale = 2)
-  private BigDecimal price;
+  private BigDecimal unitPrice;
+
+  @Column(precision = 12, scale = 2)
+  private BigDecimal subtotal;
 
   @Column
   private String productName; // Store the name at time of order

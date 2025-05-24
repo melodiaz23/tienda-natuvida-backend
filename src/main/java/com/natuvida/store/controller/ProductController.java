@@ -1,7 +1,7 @@
 package com.natuvida.store.controller;
 
 import com.natuvida.store.api.response.ApiResponse;
-import com.natuvida.store.dto.response.ProductDTO;
+import com.natuvida.store.dto.response.ProductResponseDTO;
 import com.natuvida.store.dto.request.ProductRequestDTO;
 import com.natuvida.store.service.ProductService;
 import com.natuvida.store.util.ApiPaths;
@@ -21,40 +21,40 @@ public class ProductController {
   private final ProductService productService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@RequestBody ProductRequestDTO request) {
-    ProductDTO newProduct = productService.createProduct(request);
+  public ResponseEntity<ApiResponse<ProductResponseDTO>> createProduct(@RequestBody ProductRequestDTO request) {
+    ProductResponseDTO newProduct = productService.createProduct(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(ApiResponse.success(newProduct, "Producto creado exitosamente"));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
-    ProductDTO updatedProduct = productService.updateProduct(id, request);
+  public ResponseEntity<ApiResponse<ProductResponseDTO>> updateProduct(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
+    ProductResponseDTO updatedProduct = productService.updateProduct(request);
     return ResponseEntity.ok(ApiResponse.success(updatedProduct, "Producto actualizado exitosamente"));
   }
 
   @GetMapping
-  public ResponseEntity<ApiResponse<List<ProductDTO>>> getAllProducts() {
-    List<ProductDTO> productDTOs = productService.getAllProducts();
-    return ResponseEntity.ok(ApiResponse.success(productDTOs, "Consulta exitosa"));
+  public ResponseEntity<ApiResponse<List<ProductResponseDTO>>> getAllProducts() {
+    List<ProductResponseDTO> productResponseDTOS = productService.getAllProducts();
+    return ResponseEntity.ok(ApiResponse.success(productResponseDTOS, "Consulta exitosa"));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ApiResponse<ProductDTO>> getProductById(@PathVariable UUID id) {
-    ProductDTO productDTO = productService.getProductById(id);
-    return ResponseEntity.ok(ApiResponse.success(productDTO, "Consulta exitosa"));
+  public ResponseEntity<ApiResponse<ProductResponseDTO>> getProductById(@PathVariable UUID id) {
+    ProductResponseDTO productResponseDTO = productService.getProductById(id);
+    return ResponseEntity.ok(ApiResponse.success(productResponseDTO, "Consulta exitosa"));
   }
 
   @GetMapping("/{slug}")
-  public ResponseEntity<ApiResponse<ProductDTO>> getProductBySlug(@PathVariable String slug) {
-    ProductDTO productDTO = productService.getProductBySlug(slug);
-    return ResponseEntity.ok(ApiResponse.success(productDTO, "Consulta exitosa"));
+  public ResponseEntity<ApiResponse<ProductResponseDTO>> getProductBySlug(@PathVariable String slug) {
+    ProductResponseDTO productResponseDTO = productService.getProductBySlug(slug);
+    return ResponseEntity.ok(ApiResponse.success(productResponseDTO, "Consulta exitosa"));
   }
 
   @GetMapping("/category/{categoryId}")
-  public ResponseEntity<ApiResponse<List<ProductDTO>>> getProductsByCategory(@PathVariable UUID categoryId) {
-    List<ProductDTO> productDTOs = productService.getProductsByCategory(categoryId);
-    return ResponseEntity.ok(ApiResponse.success(productDTOs, "Consulta exitosa"));
+  public ResponseEntity<ApiResponse<List<ProductResponseDTO>>> getProductsByCategory(@PathVariable UUID categoryId) {
+    List<ProductResponseDTO> productResponseDTOS = productService.getProductsByCategory(categoryId);
+    return ResponseEntity.ok(ApiResponse.success(productResponseDTOS, "Consulta exitosa"));
   }
 
   @DeleteMapping("/{id}")

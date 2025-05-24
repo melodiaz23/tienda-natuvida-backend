@@ -3,6 +3,7 @@ package com.natuvida.store.service;
 import com.natuvida.store.entity.Price;
 import com.natuvida.store.exception.ValidationException;
 import com.natuvida.store.repository.PriceRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,9 +12,10 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class PriceService {
-  @Autowired
-  PriceRepository priceRepository;
+
+  private final PriceRepository priceRepository;
 
   @Transactional
   public Price setOrUpdatePrices(Price price){
@@ -30,8 +32,6 @@ public class PriceService {
         () -> price.getUnit().multiply(BigDecimal.valueOf(2))));
     prices.setThreeUnits(Objects.requireNonNullElseGet(price.getThreeUnits(),
         () ->price.getUnit().multiply(BigDecimal.valueOf(3))));
-    prices.setThreeByTwo(price.getThreeByTwo());
-    prices.setFiveByThree(price.getFiveByThree());
     return priceRepository.save(prices);
   }
 

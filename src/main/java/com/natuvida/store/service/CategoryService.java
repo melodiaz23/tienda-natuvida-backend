@@ -25,6 +25,11 @@ public class CategoryService {
   }
 
   @Transactional(readOnly = true)
+  public List<CategoryResponseDTO> findAllById(List<UUID> ids){
+    return categoryMapper.toDtoList(categoryRepository.findAllById(ids));
+  }
+
+  @Transactional(readOnly = true)
   public Category getCategoryById(UUID id){
     return categoryRepository.getReferenceById(id);
   }
