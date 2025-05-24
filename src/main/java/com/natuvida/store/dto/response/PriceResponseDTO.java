@@ -12,6 +12,4 @@ public class PriceResponseDTO {
   private BigDecimal unit;
   private BigDecimal twoUnits;
   private BigDecimal threeUnits;
-  private BigDecimal threeByTwo;
-  private BigDecimal fiveByThree;
 }

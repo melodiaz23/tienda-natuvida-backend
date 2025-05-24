@@ -3,9 +3,12 @@ package com.natuvida.store.service;
 import com.natuvida.store.dto.request.UserProfileRequestDTO;
 import com.natuvida.store.dto.request.UserRequestDTO;
 import com.natuvida.store.dto.response.UserResponseDTO;
+import com.natuvida.store.entity.Customer;
 import com.natuvida.store.entity.User;
 import com.natuvida.store.enums.Role;
+import com.natuvida.store.exception.ValidationException;
 import com.natuvida.store.mapper.UserMapper;
+import com.natuvida.store.repository.CustomerRepository;
 import com.natuvida.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,9 +24,16 @@ public class UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
+  private final CustomerRepository customerRepository;
 
   @Transactional
   public UserResponseDTO registerUser(UserRequestDTO requestDTO) {
+    // Verificar si el correo electrónico ya está en uso
+    Optional<User> existingUser = userRepository.findByEmail(requestDTO.getEmail());
+    if (existingUser.isPresent()) {
+      throw new RuntimeException("El correo electrónico ya está en uso");
+    }
+
     User user = new User();
     user.setEmail(requestDTO.getEmail());
     user.setName(requestDTO.getName());
@@ -59,8 +69,23 @@ public class UserService {
       user.setEmail(profileDTO.getEmail());
     }
 
-    if(profileDTO.getPhone() != null){
+    if (profileDTO.getPhone() != null) {
       user.setPhone(profileDTO.getPhone());
+
+      Optional<Customer> customerOpt = customerRepository.findByPhoneNumber(user.getPhone());
+
+      if (customerOpt.isPresent()) {
+        Customer customer = customerOpt.get();
+        // Si el customer ya tiene un usuario asignado
+        if (customer.getUser() != null) {
+          if (!customer.getUser().equals(user)) {
+            throw new ValidationException("Este número de teléfono ya está asociado a otro usuario");
+          }
+        } else {
+          customer.setUser(user);
+          customerRepository.save(customer);
+        }
+      }
     }
     // Solo actualizar la contraseña si se proporciona una nueva
     if (profileDTO.getPassword() != null && !profileDTO.getPassword().isEmpty()) {
@@ -79,6 +104,14 @@ public class UserService {
 
     userMapper.updateUserFromProfileDto(profileDTO, user);
     User updatedUser = userRepository.save(user);
+    // Si el usuario tiene un customer asociado, actualizar la información del customer
+    if (user.getCustomer() != null) {
+      Customer customer = user.getCustomer();
+      customer.setPhoneNumber(profileDTO.getPhone());
+      customer.setAddress(profileDTO.getAddress());
+      customer.setCity(profileDTO.getCity());
+      customerRepository.save(customer);
+    }
     return userMapper.toDto(updatedUser);
   }
 

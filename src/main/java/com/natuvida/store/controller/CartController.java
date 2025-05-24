@@ -26,23 +26,18 @@ public class CartController {
 
   @GetMapping
   public ResponseEntity<ApiResponse<CartResponseDTO>> getCurrentCart() {
-    // Obtener la autenticación actual
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    // Verificar si el usuario está autenticado
     if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-      // Usuario autenticado - buscar su carrito
       UUID userId = userService.getUserIdByEmail(auth.getName());
       CartResponseDTO cart = cartService.findCartByUserId(userId);
 
       if (cart != null) {
         return ResponseEntity.ok(ApiResponse.success(cart, "Carrito recuperado exitosamente"));
       } else {
-        // El usuario no tiene carrito, crear uno nuevo
         cart = cartService.createCart(userId);
         return ResponseEntity.ok(ApiResponse.success(cart, "Nuevo carrito creado"));
       }
     } else {
-      // Usuario no autenticado - el frontend debe usar localStorage
       return ResponseEntity.ok(ApiResponse.success(null, "Usuario no autenticado, use carrito local"));
     }
   }
@@ -50,13 +45,11 @@ public class CartController {
   @PostMapping("/sync")
   public ResponseEntity<ApiResponse<CartResponseDTO>> syncCartFromLocalStorage(
       @RequestBody List<CartItemRequestDTO> localCartItems) {
-    // Verificar que el usuario esté autenticado
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
           .body(ApiResponse.error("Debe iniciar sesión para sincronizar el carrito"));
     }
-    // Sincronizar carrito local con carrito del usuario
     UUID userId = userService.getUserIdByEmail(auth.getName());
     CartResponseDTO syncedCart = cartService.syncCartFromLocalStorage(userId, localCartItems);
     return ResponseEntity.ok(ApiResponse.success(syncedCart, "Carrito sincronizado exitosamente"));

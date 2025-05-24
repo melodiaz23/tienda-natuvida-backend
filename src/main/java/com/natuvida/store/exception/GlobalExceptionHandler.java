@@ -36,6 +36,14 @@ import java.util.List;
 @RestControllerAdvice // For manage the exceptions in a centralized way
 public class GlobalExceptionHandler {
 
+  // GLOBALS EXCEPTIONS
+  @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleValidation(ValidationException ex) {
+      return ResponseEntity
+          .status(HttpStatus.BAD_REQUEST)
+          .body(ApiResponse.error("Error de validación: " + ex.getMessage()));
+    }
+
   // AUTHENTICATION EXCEPTIONS
   // Excepciones de Spring Security - User Details
   // Manejo de credenciales inválidas (contraseña incorrecta)

@@ -1,5 +1,6 @@
 package com.natuvida.store.entity;
 
+import com.natuvida.store.exception.ValidationException;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.*;
@@ -37,7 +38,7 @@ public class Customer {
   private String lastName;
 
   @NonNull
-  @Column(nullable = false, name = "phone_number")
+  @Column(nullable = false, name = "phone_number", unique = true)
   private String phoneNumber;
 
   @Column(name = "national_id", unique = true, length = 20)
@@ -47,6 +48,7 @@ public class Customer {
   @Column(nullable = false, length = 255)
   private String address;
 
+  @NonNull
   @Column(length = 50)
   private String city;
 
@@ -65,8 +67,21 @@ public class Customer {
   @Column(nullable = false)
   private Boolean enabled = true;
 
-  @Transient // Marks a field or method as not being persisted to the database
-  public String getFullName() {
-    return firstName + " " + lastName;
+  public void setUser(User user) {
+    if (user != null && user.getCustomer() != null && !user.getCustomer().equals(this)) {
+      throw new ValidationException("Este usuario ya está asociado a otro cliente");
+    }
+
+    User oldUser = this.user;
+    this.user = user;
+
+    // Desasociar el usuario anterior, evita circular references
+    if (oldUser != null && oldUser.getCustomer() == this) {
+      oldUser.setCustomer(null);
+    }
+
+    if (user != null && user.getCustomer() != this) {
+      user.setCustomer(this);
+    }
   }
 }

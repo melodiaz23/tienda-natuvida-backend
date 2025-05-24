@@ -1,6 +1,7 @@
 package com.natuvida.store.entity;
 
 import com.natuvida.store.enums.Role;
+import com.natuvida.store.exception.ValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -66,6 +67,24 @@ public class User implements UserDetails {
 
   public boolean isCustomer() {
     return customer != null;
+  }
+
+  public void setCustomer(Customer customer) {
+    // No modificar relaciones existentes automáticamente
+    if (customer != null && customer.getUser() != null && !customer.getUser().equals(this)) {
+      throw new ValidationException("Este cliente ya está asociado a otro usuario");
+    }
+
+    Customer oldCustomer = this.customer;
+    this.customer = customer;
+
+    if (oldCustomer != null && oldCustomer.getUser() == this) {
+      oldCustomer.setUser(null);
+    }
+
+    if (customer != null && customer.getUser() != this) {
+      customer.setUser(this);
+    }
   }
 
   // Methods from UserDetails interface

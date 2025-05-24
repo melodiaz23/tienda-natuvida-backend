@@ -7,6 +7,7 @@ import lombok.Setter;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,8 +15,11 @@ import java.util.UUID;
 @Getter
 @Setter
 public class OrderRequestDTO {
-  @NotNull(message = "El ID del cliente es requerido")
+
   private UUID customerId;
+  // Para crear nuevo cliente o actualizar datos
+  @Valid
+  private CustomerRequestDTO customer;
 
   @NotBlank(message = "La dirección de envío es requerida")
   private String shippingAddress;

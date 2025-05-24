@@ -5,6 +5,7 @@ import com.natuvida.store.dto.response.CartResponseDTO;
 import com.natuvida.store.entity.*;
 import com.natuvida.store.enums.CartStatus;
 import com.natuvida.store.exception.ValidationException;
+import com.natuvida.store.exception.cart.CartValidationException;
 import com.natuvida.store.mapper.CartMapper;
 import com.natuvida.store.repository.CartItemRepository;
 import com.natuvida.store.repository.CartRepository;
@@ -65,6 +66,11 @@ public class CartService {
     }
 
     for (CartItemRequestDTO localItem : localCartItems) {
+
+      if (localItem.getQuantity() > 5) {
+        throw new CartValidationException("No se pueden agregar más de 5 unidades del mismo producto");
+      }
+
       Product product = productRepository.findById(localItem.getProductId())
           .orElseThrow(() -> new ValidationException("Producto no encontrado: " + localItem.getProductId()));
 
@@ -117,6 +123,8 @@ public class CartService {
     Product product = productRepository.findById(itemRequest.getProductId())
         .orElseThrow(() -> new ValidationException("Producto no encontrado"));
 
+    validateProductLimit(cart, itemRequest.getProductId(), itemRequest.getQuantity());
+
     Optional<CartItem> existingItem = cart.getItems().stream()
         .filter(item -> item.getProduct().getId().equals(itemRequest.getProductId()))
         .findFirst();
@@ -146,6 +154,7 @@ public class CartService {
 
   @Transactional
   public CartResponseDTO updateCartItemQuantity(UUID cartId, UUID itemId, int quantity) {
+    System.out.println("Updating item quantity: " + itemId + " to " + quantity);
     Cart cart = cartRepository.findById(cartId)
         .orElseThrow(() -> new ValidationException("Carrito no encontrado"));
 
@@ -158,6 +167,10 @@ public class CartService {
       cart.getItems().remove(item);
       cartItemRepository.delete(item);
     } else {
+      if (quantity > 5) {
+        throw new CartValidationException("No se pueden agregar más de 5 unidades del mismo producto");
+      }
+
       item.setQuantity(quantity);
       BigDecimal subtotal = calculateSubtotal(item.getProduct(), quantity);
       item.setSubtotal(subtotal);
@@ -258,5 +271,18 @@ public class CartService {
       return subtotal;
     }
   return subtotal.add(calculateSubtotal(product, remainder));
+  }
+
+  private void validateProductLimit(Cart cart, UUID productId, int newQuantity) {
+    Optional<CartItem> existingItem = cart.getItems().stream()
+        .filter(item -> item.getProduct().getId().equals(productId))
+        .findFirst();
+
+    int currentQuantity = existingItem.map(CartItem::getQuantity).orElse(0);
+    int totalQuantity = currentQuantity + newQuantity;
+
+    if (totalQuantity > 5) {
+      throw new CartValidationException("No se pueden agregar más de 5 unidades del mismo producto");
+    }
   }
 }

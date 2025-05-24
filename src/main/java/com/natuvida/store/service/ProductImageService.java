@@ -38,10 +38,6 @@ public class ProductImageService {
 
   @Transactional
   public List<ProductImage> updateProductImages(Product product, List<ProductImageRequestDTO> newImageDTOs) {
-    if ((newImageDTOs == null || newImageDTOs.isEmpty()) &&
-        (product.getImages() == null || product.getImages().isEmpty())) {
-      return new ArrayList<>();
-    }
 
     if (product.getImages() == null) {
       product.setImages(new ArrayList<>());
@@ -61,7 +57,6 @@ public class ProductImageService {
       productImage.setPrimary(imageDto.getIsPrimary() != null ? imageDto.getIsPrimary() : false);
       productImage.setDisplayOrder(imageDto.getDisplayOrder());
 
-      // Add to the product's collection
       product.getImages().add(productImage);
     }
 

@@ -45,7 +45,7 @@ public class ProductController {
     return ResponseEntity.ok(ApiResponse.success(productResponseDTO, "Consulta exitosa"));
   }
 
-  @GetMapping("/{slug}")
+  @GetMapping("/slug/{slug}")
   public ResponseEntity<ApiResponse<ProductResponseDTO>> getProductBySlug(@PathVariable String slug) {
     ProductResponseDTO productResponseDTO = productService.getProductBySlug(slug);
     return ResponseEntity.ok(ApiResponse.success(productResponseDTO, "Consulta exitosa"));

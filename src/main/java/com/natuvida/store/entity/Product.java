@@ -26,7 +26,7 @@ public class Product {
   private UUID id;
 
   @NonNull
-  @Column(nullable = false, length = 50)
+  @Column(nullable = false, length = 150)
   private String name;
 
   @Column
@@ -94,10 +94,9 @@ public class Product {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
-  @OneToMany(mappedBy = "product")
-  private List<OrderItem> orderItems;
-
   @Column(nullable = false)
   private boolean enabled = true;
 
+  @OneToMany(mappedBy = "product")
+  private List<OrderItem> orderItems;
 }

@@ -69,10 +69,9 @@ public class ProductService {
   public ProductResponseDTO updateProduct(ProductRequestDTO productRequest) {
     Product existingProduct = productRepository.findById(productRequest.getId())
         .orElseThrow(() -> new ValidationException("Producto no encontrado"));
-    if (productRequest.getImages() != null) {
-      existingProduct.getImages().clear();
-      existingProduct.getImages().addAll(productImageService.updateProductImages(existingProduct, productRequest.getImages()));
-    }
+
+    existingProduct.getImages().addAll(productImageService.updateProductImages(existingProduct, productRequest.getImages()));
+
 
     existingProduct.setName(productRequest.getName());
     return processAndSaveProduct(existingProduct, productRequest);

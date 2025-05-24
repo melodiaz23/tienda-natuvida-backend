@@ -11,6 +11,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+// TODO: REVIEW THIS IMPLEMENTATION
 @Component
 public class JwtTokenProvider {
 

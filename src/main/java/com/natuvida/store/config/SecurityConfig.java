@@ -123,7 +123,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.PUT, ApiPaths.ORDERS + "/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.DELETE, ApiPaths.ORDERS + "/**").hasRole("ADMIN")
             // Users can create orders and view specific orders (their own)
-            .requestMatchers(HttpMethod.POST, ApiPaths.ORDERS).authenticated()
+            .requestMatchers(HttpMethod.POST, ApiPaths.ORDERS).permitAll()
             .requestMatchers(HttpMethod.GET, ApiPaths.ORDERS + "/**").authenticated()
             // Users can access and update their own profile
             .requestMatchers(HttpMethod.GET, ApiPaths.USERS + "/me").authenticated()

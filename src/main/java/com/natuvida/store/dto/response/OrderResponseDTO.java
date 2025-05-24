@@ -17,7 +17,7 @@ public class OrderResponseDTO {
   private String orderNumber;
   private LocalDateTime orderDate;
   private UUID customerId;
-  private String customerName;
+  private CustomerResponseDTO customer;
   private OrderStatus status;
   private BigDecimal totalAmount;
   private List<OrderItemResponseDTO> items;

@@ -15,5 +15,6 @@ public class CartItemResponseDTO {
   private String productImageUrl;
   private Integer quantity;
   private BigDecimal unitPrice;
+  private PriceResponseDTO price;
   private BigDecimal subtotal;
 }
