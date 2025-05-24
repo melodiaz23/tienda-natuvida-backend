@@ -38,11 +38,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthenticationManager authenticationManager;
+  private final JwtTokenProvider jwtTokenProvider;
   private final UserRepository userRepository;
   private final UserService userService;
   private final PasswordEncoder passwordEncoder;
   private final UserMapper userMapper;
-  private final JwtTokenProvider jwtTokenProvider;
   private final CustomUserDetailsService customUserDetailsService;
 
   @PostMapping("/login")

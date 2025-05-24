@@ -7,11 +7,10 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {OrderItemMapper.class})
+@Mapper(componentModel = "spring", uses = {OrderItemMapper.class, CustomerMapper.class})
 public interface OrderMapper {
 
   @Mapping(target = "customerId", source = "customer.id")
-  @Mapping(target = "customerName", source = "customer.fullName")
   @Mapping(target = "items", source = "orderItems")
   OrderResponseDTO toDto(Order entity);
 

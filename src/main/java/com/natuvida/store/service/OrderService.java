@@ -10,6 +10,7 @@ import com.natuvida.store.entity.OrderItem;
 import com.natuvida.store.entity.Product;
 import com.natuvida.store.enums.OrderStatus;
 import com.natuvida.store.exception.ValidationException;
+import com.natuvida.store.exception.order.OrderValidationException;
 import com.natuvida.store.mapper.OrderMapper;
 import com.natuvida.store.repository.CustomerRepository;
 import com.natuvida.store.repository.OrderRepository;
@@ -69,13 +70,52 @@ public class OrderService {
 
   @Transactional
   public OrderResponseDTO createOrder(OrderRequestDTO orderRequest) {
-    Customer customer = customerRepository.findById(orderRequest.getCustomerId())
-        .orElseThrow(() -> new ValidationException("Cliente no encontrado"));
+    System.out.println("Creando orden: " + orderRequest);
+    Customer customer = null;
+
+    if (orderRequest.getCustomer().getNationalId() != null) {
+      Optional<Customer> existingCustomerById = customerRepository.findByNationalId(
+          orderRequest.getCustomer().getNationalId());
+      if (existingCustomerById.isPresent()) {
+        customer = existingCustomerById.get();
+      }
+    }
+
+    if (customer == null){
+    Optional<Customer> existingCustomerByPhone = customerRepository.findByPhoneNumber(
+        orderRequest.getCustomer().getPhoneNumber());
+    if (existingCustomerByPhone.isPresent()) {
+      customer = existingCustomerByPhone.get();
+    }
+    }
+
+    if (customer == null && orderRequest.getCustomer() != null) {
+      customer = new Customer(
+          orderRequest.getCustomer().getFirstName(),
+          orderRequest.getCustomer().getLastName(),
+          orderRequest.getCustomer().getPhoneNumber(),
+          orderRequest.getCustomer().getAddress(),
+          orderRequest.getCustomer().getCity()
+      );
+
+      if (orderRequest.getCustomer().getNationalId() != null) {
+        customer.setNationalId(orderRequest.getCustomer().getNationalId());
+      }
+
+      customerRepository.save(customer);
+    } else if (customer == null) {
+      throw new ValidationException("Debe proporcionar un ID de cliente existente o datos para crear uno nuevo");
+    }
+
+    System.out.println(customer);
+
     Order order = new Order(
         generateOrderNumber(),
         LocalDateTime.now(),
         orderRequest.getShippingAddress()
     );
+
+    System.out.println("New order: " + order);
 
     order.setCustomer(customer);
     order.setPaymentMethod(orderRequest.getPaymentMethod());
@@ -95,6 +135,7 @@ public class OrderService {
 
     order.setTotalAmount(total);
     Order savedOrder = orderRepository.save(order);
+    System.out.println("Orden guardada: " + savedOrder.getId());
     return orderMapper.toDto(savedOrder);
   }
 
@@ -121,6 +162,10 @@ public class OrderService {
       Product product = productRepository.findById(itemRequest.getProductId())
           .orElseThrow(() -> new ValidationException("Producto no encontrado: " + itemRequest.getProductId()));
 
+      if (itemRequest.getQuantity() > 5) {
+        throw new OrderValidationException("No se pueden ordenar más de 5 unidades del producto: " + product.getName());
+      }
+
       PriceCalculator.PriceResult priceResult = priceCalculator.calculateItemPrices(
           product.getPrice(), itemRequest.getQuantity());
 
@@ -133,8 +178,10 @@ public class OrderService {
     }).collect(Collectors.toList());
   }
 
+  @Transactional
   private String generateOrderNumber() {
-    return "ORD-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
+    Integer maxNumber = orderRepository.getMaxOrderNumber();
+    return String.format("NV-%05d", maxNumber + 1);
   }
 
 }

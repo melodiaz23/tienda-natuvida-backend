@@ -9,11 +9,12 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {PriceMapper.class})
 public interface CartItemMapper {
 
   @Mapping(target = "productId", source = "product.id")
   @Mapping(target = "productName", source = "product.name")
+  @Mapping(target = "price", source = "product.price")
   // Expresion Java para obtener la URL de la imagen del producto
   @Mapping(target = "productImageUrl", expression = "java(getProductImageUrl(entity.getProduct()))")
   CartItemResponseDTO toDto(CartItem entity);

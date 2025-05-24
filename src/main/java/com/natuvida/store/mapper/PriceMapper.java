@@ -12,7 +12,7 @@ public interface PriceMapper {
   Price toEntity(PriceResponseDTO dto);
   List<Price> toEntityList(List<PriceResponseDTO> dtoList);
 
-  PriceResponseDTO toDto(Price entity);
+  PriceResponseDTO toDto(Price price);
 
   List<PriceResponseDTO> toDtoList(List<Price> entityList);
 }
