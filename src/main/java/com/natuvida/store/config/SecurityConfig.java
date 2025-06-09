@@ -63,7 +63,7 @@ public class SecurityConfig {
         // withHttpOnlyFalse() allows JavaScript to read the cookie value
         .csrf(csrf -> csrf
             .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .ignoringRequestMatchers(ApiPaths.LOGIN, ApiPaths.REGISTER, ApiPaths.REFRESH_TOKEN)
+            .ignoringRequestMatchers(ApiPaths.LOGIN, ApiPaths.REGISTER, ApiPaths.REFRESH_TOKEN, ApiPaths.ORDERS)
         )
 
         // Configure session management

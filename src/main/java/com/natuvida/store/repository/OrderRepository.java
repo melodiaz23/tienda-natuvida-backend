@@ -18,6 +18,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
   List<Order> findByStatus(OrderStatus status);
 
-  @Query(value = "SELECT COALESCE(MAX(CAST(SUBSTRING(order_number, 4) AS SIGNED)), 20000) FROM orders", nativeQuery = true)
+  @Query(value = "SELECT COALESCE(MAX(CAST(SUBSTRING(order_number, 4) AS INTEGER)), 20000) FROM orders", nativeQuery = true)
   Integer getMaxOrderNumber();
 }
