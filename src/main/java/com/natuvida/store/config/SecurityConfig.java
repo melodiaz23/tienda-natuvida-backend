@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -56,7 +57,7 @@ public class SecurityConfig {
     http
         // Configure Cross-Origin Resource Sharing (CORS)
         // This allows your Next.js frontend to communicate with this API
-        .cors().and()
+        .cors(Customizer.withDefaults())
 
         // Configure Cross-Site Request Forgery (CSRF) protection
         // This generates a token that must be included in state-changing requests (POST, PUT, DELETE)
