@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -56,7 +57,7 @@ public class SecurityConfig {
     http
         // Configure Cross-Origin Resource Sharing (CORS)
         // This allows your Next.js frontend to communicate with this API
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .cors(Customizer.withDefaults())
 
         // Configure Cross-Site Request Forgery (CSRF) protection
         // This generates a token that must be included in state-changing requests (POST, PUT, DELETE)
@@ -160,25 +161,20 @@ public class SecurityConfig {
    * Configures CORS settings to allow the frontend to communicate with the backend.
    * CORS is crucial for applications where frontend and backend are on different domains.
    */
+  @Value("#{'${cors.allowed-origins}'.split(',')}")
+  private String[] allowedOrigins;
+
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    // Defines which origins can access the API (your Next.js app URL)
-    configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-
-    // Defines which HTTP methods can be used (GET, POST, etc.)
+    for (String origin : allowedOrigins) {
+      configuration.addAllowedOrigin(origin.trim());
+    }
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-    // Defines which headers can be included in requests
     configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-XSRF-TOKEN"));
-
-    // Defines which headers the browser can expose to JavaScript
     configuration.setExposedHeaders(List.of("X-XSRF-TOKEN"));
-
-    // Allows cookies and authentication headers to be included in requests
     configuration.setAllowCredentials(true);
 
-    // Apply these settings to all paths
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
